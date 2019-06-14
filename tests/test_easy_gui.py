@@ -20,6 +20,7 @@ class TestEasyGUI(unittest.TestCase):
         
 
     def test_gui_creation(self):
+        self.gui.mainloop()
         self.assertTrue(True)
 
 
