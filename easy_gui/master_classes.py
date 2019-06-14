@@ -4,6 +4,8 @@ The classes in here are designed to be subclassed in user applications.
 '''
 import tkinter as tk
 from .styles import BaseStyle
+import os
+
 
 
 class EasyGUI(tk.Tk):
@@ -11,6 +13,7 @@ class EasyGUI(tk.Tk):
         super().__init__()
         self.style = BaseStyle()
 
+        self.iconbitmap(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'))
         self.title('EasyGUI')
         self.geometry("800x600")
         self.configure(background=self.style.window_color)
