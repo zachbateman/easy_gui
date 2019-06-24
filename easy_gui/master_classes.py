@@ -19,12 +19,50 @@ class EasyGUI(tk.Tk):
         self.configure(background=self.style.window_color)
 
 
+        self.sections: dict = {}
+
+
     def mouse_scroll(self, event):
         # TODO
         pass
 
 
+    def add_section(self, name=''):
+        '''
+        Add a Section object to the root window.
+        '''
+        if name == '':
+            name = f'section{len(self.sections) + 1}'
+        # TODO
+        section = Section(name)
 
-class NewWidget(tk.Frame):
+        self.sections[name] = section
+
+
+
+
+class Section(tk.Frame):
+    '''
+    A Section is a tk.Frame used for storing and managing widgets.
+    '''
+    def __init__(self, name='') -> None:
+        super().__init__()
+        self.name = name
+
+        self.widgets: dict = {}
+
+
+    def add_widget(self, type='label'):
+        '''
+        Add a Widget object to this section
+        '''
+        # TODO
+        self.widgets['...'] = Widget()
+
+
+
+
+
+class Widget(tk.Frame):
     def __init__(self) -> None:
         super().__init__()
