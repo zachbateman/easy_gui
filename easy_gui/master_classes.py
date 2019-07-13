@@ -18,6 +18,7 @@ class EasyGUI(tk.Tk):
         self.geometry("800x600")
         self.configure(background=self.style.window_color)
 
+        self.add_menu()
 
         self.sections: dict = {}
 
@@ -38,6 +39,17 @@ class EasyGUI(tk.Tk):
 
         self.sections[name] = section
 
+
+    def add_menu(self, commands={'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')}):
+        '''
+        Add a Menu to the top of the root window.
+        '''
+        self.menu = tk.Menu(self)
+
+        for label, cmd in commands.items():
+            self.menu.add_command(label=label, command=cmd)
+
+        self.config(menu=self.menu)
 
 
 
