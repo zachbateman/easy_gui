@@ -40,7 +40,10 @@ class EasyGUI(tk.Tk):
         self.sections[name] = section
 
 
-    def add_menu(self, commands={'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')}):
+    def add_menu(self, commands=
+                                   {'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
+                                   cascades=
+                                   {'Options': {'Option 1': lambda: print('Option 1'), 'Option 2': lambda: print('Option 2')}}):
         '''
         Add a Menu to the top of the root window.
         '''
@@ -48,6 +51,12 @@ class EasyGUI(tk.Tk):
 
         for label, cmd in commands.items():
             self.menu.add_command(label=label, command=cmd)
+
+        for cascade, c_commands in cascades.items():
+            cascade_menu = tk.Menu(self.menu, tearoff=0)
+            for label, cmd in c_commands.items():
+                cascade_menu.add_command(label=label, command=cmd)
+            self.menu.add_cascade(label=cascade, menu=cascade_menu)
 
         self.config(menu=self.menu)
 
