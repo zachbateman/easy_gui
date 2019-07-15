@@ -11,9 +11,12 @@ class BaseStyle():
         self.window_color = '#DEE'
         self.menu_color = 'lightgrey'
 
-        self.font = font.Font(family='Helvetica', size=14, weight='normal')
+        # self.font = font.Font(family='Helvetica', size=14, weight='normal')
         self.text_color = '#000'
 
         self.label_padx = 8
         self.label_pady = 10
+
+        self.widget_bg_color = '#EAB'  #'#DEE'
+        self.button_color = '#8AC'
 
