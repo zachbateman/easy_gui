@@ -9,9 +9,13 @@ import os
 
 
 class EasyGUI(tk.Tk):
+    '''
+    Main class to be subclassed for full GUI window.
+    '''
+    style = BaseStyle()
+
     def __init__(self) -> None:
         super().__init__()
-        self.style = BaseStyle()
 
         self.iconbitmap(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'))
         self.title('EasyGUI')
@@ -21,6 +25,9 @@ class EasyGUI(tk.Tk):
         self.add_menu()
 
         self.sections: dict = {}
+
+        for name, section in self.sections.items():
+            section.pack()
 
 
     def mouse_scroll(self, event):
@@ -71,19 +78,53 @@ class Section(tk.Frame):
         self.name = name
 
         self.widgets: dict = {}
+        self.pack()
 
 
-    def add_widget(self, type='label'):
+    def add_widget(self, type='label', text=''):
         '''
         Add a Widget object to this section
         '''
         # TODO
-        self.widgets['...'] = Widget()
+        if type.lower() == 'label':
+            new_widget = Label(master=self, text=text)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
+        elif type.lower() == 'button':
+            new_widget = Button(master=self, text=text)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
 
 
 
 
 
 class Widget(tk.Frame):
-    def __init__(self) -> None:
+    def __init__(self, master=None) -> None:
+        super().__init__(bg=EasyGUI.style.widget_bg_color)
+
+
+    def place(self) -> None:
+        '''
+        Place widget in parent Section; just pack for now.
+        Later, get more sophisticated with positioning...
+        '''
+        self._widget.pack()
+
+
+
+class Button(Widget):
+    def __init__(self, master=None, text='button') -> None:
+        super().__init__()
+        self._widget = tk.Button(master=master, text=text, bg=EasyGUI.style.button_color)
+
+
+class Label(Widget):
+    def __init__(self, master=None, text='label') -> None:
+        super().__init__()
+        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color)
+
+
+class Tree(Widget):
+    def __init__(self, master=None) -> None:
         super().__init__()
