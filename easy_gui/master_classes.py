@@ -30,12 +30,12 @@ class EasyGUI(tk.Tk):
             section.pack()
 
 
-    def mouse_scroll(self, event):
+    def mouse_scroll(self, event) -> None:
         # TODO
         pass
 
 
-    def add_section(self, name=''):
+    def add_section(self, name='') -> None:
         '''
         Add a Section object to the root window.
         '''
@@ -50,7 +50,7 @@ class EasyGUI(tk.Tk):
     def add_menu(self, commands=
                                    {'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
                                    cascades=
-                                   {'Options': {'Option 1': lambda: print('Option 1'), 'Option 2': lambda: print('Option 2')}}):
+                                   {'Options': {'Option 1': lambda: print('Option 1'), 'Option 2': lambda: print('Option 2')}}) -> None:
         '''
         Add a Menu to the top of the root window.
         '''
@@ -74,24 +74,27 @@ class Section(tk.Frame):
     A Section is a tk.Frame used for storing and managing widgets.
     '''
     def __init__(self, name='') -> None:
-        super().__init__()
+        super().__init__(borderwidth=1,
+                                bg=EasyGUI.style.section_color,
+                                padx=EasyGUI.style.frame_padx,
+                                pady=EasyGUI.style.frame_pady,
+                                relief='ridge')
         self.name = name
 
         self.widgets: dict = {}
         self.pack()
 
 
-    def add_widget(self, type='label', text=''):
+    def add_widget(self, type='label', text='', **kwargs):
         '''
         Add a Widget object to this section
         '''
-        # TODO
         if type.lower() == 'label':
-            new_widget = Label(master=self, text=text)
+            new_widget = Label(master=self, text=text, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
         elif type.lower() == 'button':
-            new_widget = Button(master=self, text=text)
+            new_widget = Button(master=self, text=text, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
 
@@ -100,8 +103,13 @@ class Section(tk.Frame):
 
 
 class Widget(tk.Frame):
-    def __init__(self, master=None) -> None:
-        super().__init__(bg=EasyGUI.style.widget_bg_color)
+    '''
+    To be subclassed into specific EasyGUI widgets.
+    Class assumes the "_widget" attribute is the actual tkinter widget (if used)
+    '''
+    def __init__(self, master=None, bg=None, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.configure(background=EasyGUI.style.widget_bg_color)
 
 
     def place(self) -> None:
@@ -112,19 +120,30 @@ class Widget(tk.Frame):
         self._widget.pack()
 
 
+    def bind_click(self, command_func=lambda e: print('TEST')) -> None:
+        '''
+        Bind a left-mouse click to the widget to trigger a target "command_func" function.
+        Note that the "_widget" attribute of subclasses is assumed to be the tkinter widget itself!!!
+        '''
+        self._widget.bind('<Button-1>', command_func)
+
+
+
+
 
 class Button(Widget):
-    def __init__(self, master=None, text='button') -> None:
-        super().__init__()
-        self._widget = tk.Button(master=master, text=text, bg=EasyGUI.style.button_color)
+    def __init__(self, master=None, text='button', command_func=lambda e: print('TEST'), **kwargs) -> None:
+        super().__init__(self)
+        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color)
+        self.bind_click(command_func)
 
 
 class Label(Widget):
-    def __init__(self, master=None, text='label') -> None:
+    def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__()
-        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color)
+        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady)
 
 
 class Tree(Widget):
-    def __init__(self, master=None) -> None:
+    def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
