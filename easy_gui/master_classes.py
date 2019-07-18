@@ -97,6 +97,10 @@ class Section(tk.Frame):
             new_widget = Button(master=self, text=text, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
+        elif type.lower() == 'matplotlib':
+            new_widget = MatplotlibPlot(master=self, **kwargs)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_matplotlibplot'] = new_widget
 
 
 
@@ -147,3 +151,20 @@ class Label(Widget):
 class Tree(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
+
+
+class MatplotlibPlot(Widget):
+    def __init__(self, master=None, **kwargs) -> None:
+        import matplotlib
+        matplotlib.use('TkAgg')
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+        from matplotlib.figure import Figure
+
+        super().__init__()
+        self._widget = tk.Canvas(master=master)
+
+    def draw_plot(self, mpl_figure=None) -> None:
+        '''
+        Draw new Matplotlib Figure (mpl_figure kwarg) on the widget.
+        '''
+        pass
