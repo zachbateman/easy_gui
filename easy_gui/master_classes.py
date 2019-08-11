@@ -47,10 +47,9 @@ class EasyGUI(tk.Tk):
         self.sections[name] = section
 
 
-    def add_menu(self, commands=
-                                   {'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
-                                   cascades=
-                                   {'Options': {'Option 1': lambda: print('Option 1'), 'Option 2': lambda: print('Option 2')}}) -> None:
+    def add_menu(self,
+                 commands={'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
+                 cascades={'Options': {'Option 1': lambda: print('Option 1'), 'Option 2': lambda: print('Option 2')}}) -> None:
         '''
         Add a Menu to the top of the root window.
         '''
@@ -151,6 +150,18 @@ class Label(Widget):
 class Tree(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
+
+    def up_arrow(self, a) -> None:
+        '''
+        Go up a selection in the tree on user's up-arrow.
+        '''
+        pass
+
+    def down_arrow(self, a) -> None:
+        '''
+        Go down a selection in the tree on user's down-arrow.
+        '''
+        pass
 
 
 class MatplotlibPlot(Widget):
