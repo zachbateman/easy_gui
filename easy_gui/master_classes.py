@@ -35,7 +35,7 @@ class EasyGUI(tk.Tk):
         pass
 
 
-    def add_section(self, name='', title=False) -> None:
+    def add_section(self, name='', title=False, return_section=False) -> None:
         '''
         Add a Section object to the root window.
         '''
@@ -43,8 +43,9 @@ class EasyGUI(tk.Tk):
             name = f'section{len(self.sections) + 1}'
         # TODO
         section = Section(name, title)
-
         self.sections[name] = section
+        if return_section:
+            return section
 
 
     def add_menu(self,
