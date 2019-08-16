@@ -239,3 +239,13 @@ class StdOutBox(Widget):
         Makes self a 'file-like object'.
         '''
         pass
+
+
+class DatePicker(Widget):
+    '''
+    Widget for selecting a date - calendar style.
+    '''
+    def __init__(self, master=None, **kwargs) -> None:
+        super().__init__()
+
+        # TODO - make this widget...
