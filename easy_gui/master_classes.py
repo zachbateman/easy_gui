@@ -96,11 +96,11 @@ class Section(tk.Frame):
         '''
         Add a Widget object to this section
         '''
-        if type.lower() == 'label':
+        if type.lower() in ['label', 'lbl']:
             new_widget = Label(master=self, text=text, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
-        elif type.lower() == 'button':
+        elif type.lower() in ['button', 'btn']:
             new_widget = Button(master=self, text=text, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
@@ -112,6 +112,8 @@ class Section(tk.Frame):
             new_widget = StdOutBox(master=self, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_stdout'] = new_widget
+        else:
+            raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
 
 
 
