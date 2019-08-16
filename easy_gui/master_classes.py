@@ -5,6 +5,7 @@ The classes in here are designed to be subclassed in user applications.
 import tkinter as tk
 from .styles import BaseStyle
 import os
+import sys
 import threading
 
 
@@ -107,6 +108,10 @@ class Section(tk.Frame):
             new_widget = MatplotlibPlot(master=self, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_matplotlibplot'] = new_widget
+        elif type.lower() == 'stdout':
+            new_widget = StdOutBox(master=self, **kwargs)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_stdout'] = new_widget
 
 
 
@@ -196,5 +201,23 @@ class MatplotlibPlot(Widget):
     def draw_plot(self, mpl_figure=None) -> None:
         '''
         Draw new Matplotlib Figure (mpl_figure kwarg) on the widget.
+        '''
+        pass
+
+
+class StdOutBox(Widget):
+    def __init__(self, master=None, **kwargs) -> None:
+        super().__init__()
+        self._widget = tk.Text(master, wrap='word')
+        sys.stdout = self
+
+    def write(self, s):
+        '''Write printed text to text box on a new line'''
+        self._widget.insert(tk.END, s)
+
+    def flush(self):
+        '''
+        Method must be implemented for stdout replacement.
+        Makes self a 'file-like object'.
         '''
         pass
