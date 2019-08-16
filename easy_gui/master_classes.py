@@ -92,7 +92,7 @@ class Section(tk.Frame):
                 self.add_widget(type='label', text=name)
 
 
-    def add_widget(self, type='label', text='', **kwargs):
+    def add_widget(self, type='label', text='', return_widget=False, **kwargs):
         '''
         Add a Widget object to this section
         '''
@@ -104,6 +104,10 @@ class Section(tk.Frame):
             new_widget = Button(master=self, text=text, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
+        elif type.lower() == 'entry':
+            new_widget = Entry(master=self, **kwargs)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_entry'] = new_widget
         elif type.lower() == 'matplotlib':
             new_widget = MatplotlibPlot(master=self, **kwargs)
             new_widget.place()
@@ -114,6 +118,8 @@ class Section(tk.Frame):
             self.widgets[f'{len(self.widgets) + 1}_stdout'] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
+        if return_widget:
+            return new_widget
 
 
 
@@ -171,6 +177,16 @@ class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__()
         self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady)
+
+
+class Entry(Widget):
+    def __init__(self, master=None, **kwargs) -> None:
+        super().__init__()
+        self.strvar = tk.StringVar()
+        self._widget = tk.Entry(master=master, textvariable=self.strvar)
+
+    def get(self):
+        return self._widget.get()
 
 
 class Tree(Widget):
