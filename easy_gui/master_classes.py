@@ -3,6 +3,7 @@ Python module containing "Master" classes of easy_gui project.
 The classes in here are designed to be subclassed in user applications.
 '''
 import tkinter as tk
+from tkinter import ttk
 from .styles import BaseStyle
 import os
 import sys
@@ -108,6 +109,10 @@ class Section(tk.Frame):
             new_widget = Entry(master=self, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_entry'] = new_widget
+        elif type.lower() == 'tree':
+            new_widget = Tree(master=self, **kwargs)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_tree'] = new_widget
         elif type.lower() == 'matplotlib':
             new_widget = MatplotlibPlot(master=self, **kwargs)
             new_widget.place()
@@ -193,6 +198,12 @@ class Tree(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
 
+        # using "show='tree'" option gets rid of the header line
+        # "selectmode='none'" stops the highlight from occurring
+        self._widget = ttk.Treeview(master, selectmode='none', columns=('test', 'test2'), style='Treeview', height=30, show='tree')
+
+        self.scrollbar = ttk.Scrollbar(master, orient='vertical')
+
     def up_arrow(self, a) -> None:
         '''
         Go up a selection in the tree on user's up-arrow.
@@ -248,4 +259,4 @@ class DatePicker(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
 
-        # TODO - make this widget...
+        # TODO: Make this widget...
