@@ -154,7 +154,7 @@ class Widget(tk.Frame):
 class Button(Widget):
     def __init__(self, master=None, text='button', command_func=lambda e: print('TEST'), separate_thread=False, **kwargs) -> None:
         super().__init__(self)
-        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color)
+        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, width=kwargs.get('width', None))
         self.bind_click(command_func, separate_thread)
 
     def place(self) -> None:
