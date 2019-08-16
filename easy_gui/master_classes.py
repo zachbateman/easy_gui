@@ -146,6 +146,13 @@ class Button(Widget):
         self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color)
         self.bind_click(command_func)
 
+    def place(self) -> None:
+        '''
+        Override Widget method for proper padding on outside!
+        (have to supply padx and pady on pack call for button
+        '''
+        self._widget.pack(padx=EasyGUI.style.button_padx, pady=EasyGUI.style.button_pady)
+
 
 class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:

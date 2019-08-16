@@ -20,6 +20,8 @@ class BaseStyle():
         self.frame_pady = 5
         self.label_padx = 8
         self.label_pady = 10
+        self.button_padx = 4
+        self.button_pady = 2
 
         self.widget_bg_color = self.section_color
         self.button_color = '#8AC'
