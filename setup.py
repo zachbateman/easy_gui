@@ -15,6 +15,8 @@ setuptools.setup(
     url='https://github.com/zachbateman/easy_gui.git',
     download_url='https://github.com/zachbateman/easy_gui/archive/v_0.1.0.tar.gz',
     keywords=['GUI', 'TKINTER', 'APPLICATION', 'SIMPLE', 'EASY'],
+    package_data={'': ['resources/transparent.ico']},
+    include_package_data=True,
     install_requires=[],
     classifiers=['Development Status :: 3 - Alpha',
                    'License :: OSI Approved :: MIT License',
