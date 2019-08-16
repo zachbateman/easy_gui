@@ -5,6 +5,7 @@ The classes in here are designed to be subclassed in user applications.
 import tkinter as tk
 from .styles import BaseStyle
 import os
+import threading
 
 
 
@@ -129,22 +130,27 @@ class Widget(tk.Frame):
         self._widget.pack()
 
 
-    def bind_click(self, command_func=lambda e: print('TEST')) -> None:
+    def bind_click(self, command_func=lambda e: print('TEST'), separate_thread=False) -> None:
         '''
         Bind a left-mouse click to the widget to trigger a target "command_func" function.
         Note that the "_widget" attribute of subclasses is assumed to be the tkinter widget itself!!!
         '''
-        self._widget.bind('<Button-1>', command_func)
+        if separate_thread:
+            def threaded_command_func(*args):
+                threading.Thread(target=command_func).start()
+            self._widget.bind('<Button-1>', threaded_command_func)
+        else:
+            self._widget.bind('<Button-1>', command_func)
 
 
 
 
 
 class Button(Widget):
-    def __init__(self, master=None, text='button', command_func=lambda e: print('TEST'), **kwargs) -> None:
+    def __init__(self, master=None, text='button', command_func=lambda e: print('TEST'), separate_thread=False, **kwargs) -> None:
         super().__init__(self)
         self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color)
-        self.bind_click(command_func)
+        self.bind_click(command_func, separate_thread)
 
     def place(self) -> None:
         '''
