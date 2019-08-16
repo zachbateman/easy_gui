@@ -35,14 +35,14 @@ class EasyGUI(tk.Tk):
         pass
 
 
-    def add_section(self, name='') -> None:
+    def add_section(self, name='', title=False) -> None:
         '''
         Add a Section object to the root window.
         '''
         if name == '':
             name = f'section{len(self.sections) + 1}'
         # TODO
-        section = Section(name)
+        section = Section(name, title)
 
         self.sections[name] = section
 
@@ -72,7 +72,7 @@ class Section(tk.Frame):
     '''
     A Section is a tk.Frame used for storing and managing widgets.
     '''
-    def __init__(self, name='') -> None:
+    def __init__(self, name='', title=False) -> None:
         super().__init__(borderwidth=1,
                                 bg=EasyGUI.style.section_color,
                                 padx=EasyGUI.style.frame_padx,
@@ -82,6 +82,11 @@ class Section(tk.Frame):
 
         self.widgets: dict = {}
         self.pack()
+        if title:  # title kwarg can be provided as True or a string
+            if isinstance(title, str):  # if string, use title for label text
+                self.add_widget(type='label', text=title)
+            elif title == True:  # if True, use the name as the label text
+                self.add_widget(type='label', text=name)
 
 
     def add_widget(self, type='label', text='', **kwargs):
