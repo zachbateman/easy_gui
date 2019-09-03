@@ -243,6 +243,7 @@ class StdOutBox(Widget):
     def write(self, s):
         '''Write printed text to text box on a new line'''
         self._widget.insert(tk.END, s)
+        self._widget.see(tk.END)
 
     def flush(self):
         '''
