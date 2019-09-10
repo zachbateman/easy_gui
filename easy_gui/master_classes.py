@@ -49,12 +49,25 @@ class EasyGUI(tk.Tk):
         '''
         if name == '':
             name = f'section{len(self.sections) + 1}'
-        # TODO
+        if name in self.sections:
+            raise ValueError('Unable to add section as a section with the given name already exists!')
         section = Section(name, title)
         self.sections[name] = section
         if return_section:
             return section
 
+    def delete_section(self, section_name) -> None:
+        '''
+        Fully delete a section and all of its child widgets.
+        Pass without issue if the section doesn't exist.
+        '''
+        try:
+            for key, widget in self.sections[section_name].widgets.items():
+                widget._widget.destroy()
+            self.sections[section_name].destroy()
+            del self.sections[section_name]
+        except:
+            pass
 
     def add_menu(self,
                  commands={'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
@@ -91,7 +104,7 @@ class Section(tk.Frame):
 
         self.widgets: dict = {}
         self.pack()
-        if title:  # title kwarg can be provided as True or a string
+        if title:  # title kwargs can be provided as True or a string
             if isinstance(title, str):  # if string, use title for label text
                 self.add_widget(type='label', text=title)
             elif title == True:  # if True, use the name as the label text
@@ -135,6 +148,30 @@ class Section(tk.Frame):
         if return_widget:
             return new_widget
 
+    def delete_widget(self, widget_name) -> None:
+        '''
+        Fully delete a widget.
+        Pass without issue if the widget doesn't exist.
+        '''
+        # try:
+        self.widgets[widget_name].destroy()
+        del self.widgets[widget_name]
+        # except:
+            # pass
+
+    def replace_widget(self, widget_name='', type='label', text='', return_widget=False, **kwargs):
+        '''
+        Replace a widget with a new one.
+        '''
+        if type.lower() == 'matplotlib':
+            new_widget = MatplotlibPlot(master=self, **kwargs)
+            new_widget.place()
+            if widget_name == '':
+                widget_name = [k for k in self.widgets.keys() if 'matplotlibplot' in k][0]
+            self.widgets[widget_name] = new_widget
+        if return_widget:
+            return new_widget
+
 
 
 
@@ -168,6 +205,9 @@ class Widget(tk.Frame):
             self._widget.bind('<Button-1>', threaded_command_func)
         else:
             self._widget.bind('<Button-1>', command_func)
+
+    def destroy(self):
+        self._widget.destroy()
 
 
 
@@ -271,6 +311,7 @@ class MatplotlibPlot(Widget):
         ... VERY difficult to get this working ...
         '''
         self._widget.delete('all')  # not working...
+        # self.frame.delete()
 
 
 class StdOutBox(Widget):
