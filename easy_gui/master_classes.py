@@ -153,11 +153,18 @@ class Section(tk.Frame):
         Fully delete a widget.
         Pass without issue if the widget doesn't exist.
         '''
-        # try:
-        self.widgets[widget_name].destroy()
-        del self.widgets[widget_name]
-        # except:
-            # pass
+        try:
+            self.widgets[widget_name].destroy()
+            del self.widgets[widget_name]
+        except:
+            pass
+
+    def delete_all_widgets(self) -> None:
+        '''
+        Fully delete all child widgets of this section.
+        '''
+        for w_name in list(self.widgets.keys()):
+            self.delete_widget(w_name)
 
     def replace_widget(self, widget_name='', type='label', text='', return_widget=False, **kwargs):
         '''

@@ -27,8 +27,7 @@ class PlotterGUI(easy_gui.EasyGUI):
         ax = fig.add_subplot(111)
         ax.scatter([t[1] for t in data], [t[0] for t in data])
 
-        for w_name in list(self.display.widgets.keys()):
-            self.display.delete_widget(w_name)
+        self.display.delete_all_widgets()
 
         plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
         plot.draw_plot(mpl_figure=fig)
@@ -38,8 +37,7 @@ class PlotterGUI(easy_gui.EasyGUI):
         ax = fig.add_subplot(111)
         ax.plot([t[1] for t in data], [t[0] for t in data])
 
-        for w_name in list(self.display.widgets.keys()):
-            self.display.delete_widget(w_name)
+        self.display.delete_all_widgets()
 
         plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
         plot.draw_plot(mpl_figure=fig)
