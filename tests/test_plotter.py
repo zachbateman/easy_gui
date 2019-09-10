@@ -3,39 +3,56 @@ import sys
 sys.path.insert(1, '..')
 import easy_gui
 from matplotlib.figure import Figure
-import time
+from pprint import pprint as pp
 
 data = [(1, 1), (2, 3), (3, 5), (4, 4), (5, 7), (6, 7)]
+
+
+
+
+class PlotterGUI(easy_gui.EasyGUI):
+    def __init__(self):
+        super().__init__()
+
+        self.add_section('controls')
+        self.sections['controls'].add_widget(type='button', text='Scatter Plot', command_func=self.draw_scatter)
+        self.sections['controls'].add_widget(type='button', text='Line Plot', command_func=self.draw_line)
+
+        self.display = self.add_section('display', return_section=True)
+        plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
+
+
+    def draw_scatter(self, *args):
+        fig = Figure(figsize=(4,3), dpi=100)
+        ax = fig.add_subplot(111)
+        ax.scatter([t[1] for t in data], [t[0] for t in data])
+
+        for w_name in list(self.display.widgets.keys()):
+            self.display.delete_widget(w_name)
+
+        plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
+        plot.draw_plot(mpl_figure=fig)
+
+    def draw_line(self, *args):
+        fig = Figure(figsize=(4,3), dpi=100)
+        ax = fig.add_subplot(111)
+        ax.plot([t[1] for t in data], [t[0] for t in data])
+
+        for w_name in list(self.display.widgets.keys()):
+            self.display.delete_widget(w_name)
+
+        plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
+        plot.draw_plot(mpl_figure=fig)
+
 
 
 class TestPlotterGUI(unittest.TestCase):
 
     def setUp(self):
-        self.gui = easy_gui.EasyGUI()
+        self.gui = PlotterGUI()
 
 
     def test_gui(self):
-        self.gui.add_section('controls')
-        self.gui.sections['controls'].add_widget(type='button', text='Scatter Plot', command_func=lambda e: print('Button1 working!'))
-        self.gui.sections['controls'].add_widget(type='button', text='Line Plot', command_func=lambda e: print('Button1 working!'))
-
-        self.gui.add_section('display')
-        plot = self.gui.sections['display'].add_widget(type='matplotlib', return_widget=True)
-
-
-        fig = Figure(figsize=(4,3), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.scatter([t[0] for t in data], [t[1] for t in data])
-        plot.draw_plot(mpl_figure=fig)
-
-        time.sleep(2)
-
-        fig = Figure(figsize=(4,3), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.scatter([t[1] for t in data], [t[0] for t in data])
-        plot.draw_plot(mpl_figure=fig)
-
-
         self.gui.mainloop()
         self.assertTrue(True)
 
