@@ -109,6 +109,10 @@ class Section(tk.Frame):
             new_widget = Entry(master=self, **kwargs)
             new_widget.place()
             self.widgets[f'{len(self.widgets) + 1}_entry'] = new_widget
+        elif type.lower() == 'dropdown':
+            new_widget = DropDown(master=self, **kwargs)
+            new_widget.place()
+            self.widgets[f'{len(self.widgets) + 1}_dropdown'] = new_widget
         elif type.lower() == 'tree':
             new_widget = Tree(master=self, **kwargs)
             new_widget.place()
@@ -192,6 +196,21 @@ class Entry(Widget):
 
     def get(self):
         return self._widget.get()
+
+
+class DropDown(Widget):
+    def __init__(self, master=None, dropdown_options=[], **kwargs) -> None:
+        super().__init__()
+        self.strvar = tk.StringVar()
+        self.dropdown_options = dropdown_options
+        self._widget = ttk.Combobox(master, textvariable=self.strvar, values=dropdown_options, **kwargs)
+
+    def get(self):
+        return self._widget.get()
+
+    def set_options(self, dropdown_options):
+        self._widget['values'] = dropdown_options
+        self.strvar.set('')
 
 
 class Tree(Widget):
