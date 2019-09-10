@@ -30,10 +30,7 @@ class EasyGUI(tk.Tk):
         self.geometry("800x600")
         self.configure(background=self.style.window_color)
 
-        self.add_menu()
-
         self.sections: dict = {}
-
         for name, section in self.sections.items():
             section.pack()
 
