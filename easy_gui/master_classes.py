@@ -111,38 +111,44 @@ class Section(tk.Frame):
                 self.add_widget(type='label', text=name)
 
 
-    def add_widget(self, type='label', text='', return_widget=False, **kwargs):
+    def add_widget(self, type='label', text='', widget_name=None, return_widget=False, **kwargs):
         '''
         Add a Widget object to this section
         '''
+        def new_widget_name(w_type):
+            if widget_name:
+                return widget_name
+            else:
+                return f'{len(self.widgets) + 1}' + '_' + w_type
+
         if type.lower() in ['label', 'lbl']:
             new_widget = Label(master=self, text=text, **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
+            self.widgets[new_widget_name('label')] = new_widget
         elif type.lower() in ['button', 'btn']:
             new_widget = Button(master=self, text=text, **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_button'] = new_widget
+            self.widgets[new_widget_name('button')] = new_widget
         elif type.lower() == 'entry':
             new_widget = Entry(master=self, **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_entry'] = new_widget
+            self.widgets[new_widget_name('entry')] = new_widget
         elif type.lower() == 'dropdown':
             new_widget = DropDown(master=self, **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_dropdown'] = new_widget
+            self.widgets[new_widget_name('dropdown')] = new_widget
         elif type.lower() == 'tree':
             new_widget = Tree(master=self, **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_tree'] = new_widget
+            self.widgets[new_widget_name('tree')] = new_widget
         elif type.lower() == 'matplotlib':
-            new_widget = MatplotlibPlot(master=self, **kwargs)
+            new_widget = MatplotlibPlot(master=self, section=self, widget_name=new_widget_name('matplotlibplot'), **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_matplotlibplot'] = new_widget
+            self.widgets[new_widget_name('matplotlibplot')] = new_widget
         elif type.lower() == 'stdout':
             new_widget = StdOutBox(master=self, **kwargs)
             new_widget.place()
-            self.widgets[f'{len(self.widgets) + 1}_stdout'] = new_widget
+            self.widgets[widget_name + '_stdout'] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
         if return_widget:
@@ -165,6 +171,12 @@ class Section(tk.Frame):
         '''
         for w_name in list(self.widgets.keys()):
             self.delete_widget(w_name)
+
+    def _clear_and_recreate_plot(self, mpl_figure, widget_name, kwargs):
+        self.delete_widget(widget_name)
+        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, return_widget=True)
+        new_widget.draw_plot(mpl_figure=mpl_figure)
+
 
     def replace_widget(self, widget_name='', type='label', text='', return_widget=False, **kwargs):
         '''
@@ -289,36 +301,39 @@ class Tree(Widget):
 
 
 class MatplotlibPlot(Widget):
-    def __init__(self, master=None, **kwargs) -> None:
+    def __init__(self, master=None, section=None, widget_name=None, **kwargs) -> None:
         super().__init__()
+        self.section = section  # grabbing handle to Section so IT can handle replotting
+        self.widget_name = widget_name
+        self.kwargs = kwargs
         self._widget = tk.Canvas(master=master)
+        self.plot_drawn = False
 
     def draw_plot(self, mpl_figure=None) -> None:
         '''
         Draw new Matplotlib Figure (mpl_figure kwarg) on the widget.
+
+        If a plot already exists, call parent section._clear_and_recreate_plot method
+        to destroy and then recreate this widget!
+        Must fully destroy this widget to clear all of the matplotlib/tkinter objects.
         '''
-        self.delete_plot()
-
-        self.mpl_figure = mpl_figure
-
-        if not hasattr(self, 'fig_canvas'):
-            self.fig_canvas = FigureCanvasTkAgg(self.mpl_figure, self._widget)
+        if self.plot_drawn:
+            self.section._clear_and_recreate_plot(mpl_figure, self.widget_name, self.kwargs)
         else:
-            FigureCanvasTkAgg.figure = self.mpl_figure
+            self.plot_drawn = True
+            self.mpl_figure = mpl_figure
 
-        if not hasattr(self, 'toolbar'):
-            self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
-        self.toolbar.update()
-        self.fig_canvas.draw()
-        self.fig_canvas.get_tk_widget().pack(expand=True)
+            if not hasattr(self, 'fig_canvas'):
+                self.fig_canvas = FigureCanvasTkAgg(self.mpl_figure, self._widget)
+            else:
+                FigureCanvasTkAgg.figure = self.mpl_figure
 
-    def delete_plot(self):
-        '''
-        Totally clear out canvas for next plot.
-        ... VERY difficult to get this working ...
-        '''
-        self._widget.delete('all')  # not working...
-        # self.frame.delete()
+            if not hasattr(self, 'toolbar'):
+                self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
+            self.toolbar.update()
+            self.fig_canvas.draw()
+            self.fig_canvas.get_tk_widget().pack(expand=True)
+
 
 
 class StdOutBox(Widget):

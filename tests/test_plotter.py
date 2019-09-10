@@ -19,28 +19,20 @@ class PlotterGUI(easy_gui.EasyGUI):
         self.sections['controls'].add_widget(type='button', text='Line Plot', command_func=self.draw_line)
 
         self.display = self.add_section('display', return_section=True)
-        plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
+        self.plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
 
 
     def draw_scatter(self, *args):
         fig = Figure(figsize=(4,3), dpi=100)
         ax = fig.add_subplot(111)
         ax.scatter([t[1] for t in data], [t[0] for t in data])
-
-        self.display.delete_all_widgets()
-
-        plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
-        plot.draw_plot(mpl_figure=fig)
+        self.plot.draw_plot(mpl_figure=fig)
 
     def draw_line(self, *args):
         fig = Figure(figsize=(4,3), dpi=100)
         ax = fig.add_subplot(111)
         ax.plot([t[1] for t in data], [t[0] for t in data])
-
-        self.display.delete_all_widgets()
-
-        plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
-        plot.draw_plot(mpl_figure=fig)
+        self.plot.draw_plot(mpl_figure=fig)
 
 
 
