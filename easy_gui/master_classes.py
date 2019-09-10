@@ -9,6 +9,11 @@ import os
 import sys
 import threading
 
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+
 
 
 class EasyGUI(tk.Tk):
@@ -238,11 +243,6 @@ class Tree(Widget):
 
 class MatplotlibPlot(Widget):
     def __init__(self, master=None, **kwargs) -> None:
-        import matplotlib
-        matplotlib.use('TkAgg')
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-        from matplotlib.figure import Figure
-
         super().__init__()
         self._widget = tk.Canvas(master=master)
 
@@ -250,7 +250,27 @@ class MatplotlibPlot(Widget):
         '''
         Draw new Matplotlib Figure (mpl_figure kwarg) on the widget.
         '''
-        pass
+        self.delete_plot()
+
+        self.mpl_figure = mpl_figure
+
+        if not hasattr(self, 'fig_canvas'):
+            self.fig_canvas = FigureCanvasTkAgg(self.mpl_figure, self._widget)
+        else:
+            FigureCanvasTkAgg.figure = self.mpl_figure
+
+        if not hasattr(self, 'toolbar'):
+            self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
+        self.toolbar.update()
+        self.fig_canvas.draw()
+        self.fig_canvas.get_tk_widget().pack(expand=True)
+
+    def delete_plot(self):
+        '''
+        Totally clear out canvas for next plot.
+        ... VERY difficult to get this working ...
+        '''
+        self._widget.delete('all')  # not working...
 
 
 class StdOutBox(Widget):
