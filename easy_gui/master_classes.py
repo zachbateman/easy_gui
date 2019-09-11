@@ -232,7 +232,7 @@ class Widget(tk.Frame):
 class Button(Widget):
     def __init__(self, master=None, text='button', command_func=lambda e: print('TEST'), separate_thread=False, **kwargs) -> None:
         super().__init__(self)
-        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, width=kwargs.get('width', None))
+        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, **kwargs)
         self.bind_click(command_func, separate_thread)
 
     def place(self) -> None:
@@ -246,14 +246,14 @@ class Button(Widget):
 class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__()
-        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady)
+        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, **kwargs)
 
 
 class Entry(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
         self.strvar = tk.StringVar()
-        self._widget = tk.Entry(master=master, textvariable=self.strvar)
+        self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
 
     def get(self):
         return self._widget.get()
@@ -280,7 +280,7 @@ class Tree(Widget):
 
         # using "show='tree'" option gets rid of the header line
         # "selectmode='none'" stops the highlight from occurring
-        self._widget = ttk.Treeview(master, selectmode='none', columns=('test', 'test2'), style='Treeview', height=30, show='tree')
+        self._widget = ttk.Treeview(master, selectmode='none', columns=('test', 'test2'), style='Treeview', height=30, show='tree', **kwargs)
 
         self.scrollbar = ttk.Scrollbar(master, orient='vertical')
 
@@ -303,7 +303,7 @@ class MatplotlibPlot(Widget):
         self.section = section  # grabbing handle to Section so IT can handle replotting
         self.widget_name = widget_name
         self.kwargs = kwargs
-        self._widget = tk.Canvas(master=master)
+        self._widget = tk.Canvas(master=master, **kwargs)
         self.plot_drawn = False
 
     def draw_plot(self, mpl_figure=None) -> None:
@@ -336,7 +336,7 @@ class MatplotlibPlot(Widget):
 class StdOutBox(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
-        self._widget = tk.Text(master, wrap='word')
+        self._widget = tk.Text(master, wrap='word', **kwargs)
         sys.stdout = self
 
     def write(self, s):
