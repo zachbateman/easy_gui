@@ -145,7 +145,7 @@ class Section(tk.Frame):
         elif type.lower() == 'stdout':
             new_widget = StdOutBox(master=self, **kwargs)
             new_widget.place()
-            self.widgets[widget_name + '_stdout'] = new_widget
+            self.widgets[new_widget_name('stdout')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
         if return_widget:
