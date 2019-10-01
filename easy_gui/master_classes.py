@@ -275,18 +275,16 @@ class DropDown(Widget):
 
 
 class Tree(Widget):
-    def __init__(self, master=None, **kwargs) -> None:
+    def __init__(self, master=None, tree_col_header: str='Name', tree_col_width: int=120, **kwargs) -> None:
         super().__init__()
 
-        # using "show='tree'" option gets rid of the header line
-        # "selectmode='none'" stops the highlight from occurring
-        # self._widget = ttk.Treeview(master, selectmode='none', columns=(), style='Treeview', height=30, show='tree', **kwargs)
-        self._widget = ttk.Treeview(master, columns=(), style='Treeview', show='headings', height=30, **kwargs)
-        self.column_definitions = [{'column_name': '#0', 'width': 10, 'minwidth': 5, 'stretch': tk.NO}]
+        self._widget = ttk.Treeview(master, columns=(), style='Treeview', show='tree headings', height=30, **kwargs)
+        self.tree_col_header = tree_col_header
+        self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
         self.scrollbar = ttk.Scrollbar(master, orient='vertical')
 
 
-    def insert_column(self, column_name, width=80, minwidth=20, stretch=tk.YES) -> None:
+    def insert_column(self, column_name, width=120, minwidth=40, stretch=tk.YES) -> None:
         '''
         Insert a column and associated heading (column title) at the top in the tree.
         Use "column_name" arg both for the displayed text and to reference this column in code.
@@ -300,13 +298,26 @@ class Tree(Widget):
         must be set up before assigning headers.
         '''
         columns = [col['column_name'] for col in self.column_definitions]
-        self._widget['columns'] = columns
+        self._widget['columns'] = columns[1:]  # don't include assumed first "tree" column
+
         for col in self.column_definitions:
             self._widget.column(col['column_name'], width=col['width'], minwidth=col['minwidth'], stretch=col['stretch'])
-        for col in self.column_definitions:
-            self._widget.heading(col['column_name'], text=col['column_name'], anchor=tk.W)
-        self._widget['displaycolumns'] = self._widget['columns'][1:]  # hide first "#0" tree column
 
+        self._widget.heading('#0', text=self.tree_col_header, anchor=tk.W)
+        for col in self.column_definitions[1:]:
+            self._widget.heading(col['column_name'], text=col['column_name'], anchor=tk.W)
+
+    def insert_row(self, text, values=('',), parent_row=None, return_row=False, open=False):
+        '''
+        Values arg must be provided as tuple of strings
+        '''
+        if parent_row is None:
+            new_row = self._widget.insert('', 'end', text=text, values=values, open=open)
+        else:
+            print(parent_row)
+            new_row = self._widget.insert(parent_row, 'end', text=text, values=values, open=open)
+        if return_row:
+            return new_row
 
     def up_arrow(self, a) -> None:
         '''
