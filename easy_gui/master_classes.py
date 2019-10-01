@@ -280,9 +280,33 @@ class Tree(Widget):
 
         # using "show='tree'" option gets rid of the header line
         # "selectmode='none'" stops the highlight from occurring
-        self._widget = ttk.Treeview(master, selectmode='none', columns=('test', 'test2'), style='Treeview', height=30, show='tree', **kwargs)
-
+        # self._widget = ttk.Treeview(master, selectmode='none', columns=(), style='Treeview', height=30, show='tree', **kwargs)
+        self._widget = ttk.Treeview(master, columns=(), style='Treeview', show='headings', height=30, **kwargs)
+        self.column_definitions = [{'column_name': '#0', 'width': 10, 'minwidth': 5, 'stretch': tk.NO}]
         self.scrollbar = ttk.Scrollbar(master, orient='vertical')
+
+
+    def insert_column(self, column_name, width=80, minwidth=20, stretch=tk.YES) -> None:
+        '''
+        Insert a column and associated heading (column title) at the top in the tree.
+        Use "column_name" arg both for the displayed text and to reference this column in code.
+        '''
+        self.column_definitions.append({'column_name': column_name, 'width': width, 'minwidth': minwidth, 'stretch': stretch})
+        self._rebuild_columns()
+
+    def _rebuild_columns(self) -> None:
+        '''
+        Recreate columns each time one is added, because all columns
+        must be set up before assigning headers.
+        '''
+        columns = [col['column_name'] for col in self.column_definitions]
+        self._widget['columns'] = columns
+        for col in self.column_definitions:
+            self._widget.column(col['column_name'], width=col['width'], minwidth=col['minwidth'], stretch=col['stretch'])
+        for col in self.column_definitions:
+            self._widget.heading(col['column_name'], text=col['column_name'], anchor=tk.W)
+        self._widget['displaycolumns'] = self._widget['columns'][1:]  # hide first "#0" tree column
+
 
     def up_arrow(self, a) -> None:
         '''

@@ -23,10 +23,15 @@ class TestEasyGUI(unittest.TestCase):
         self.gui.add_section('test_section')
         self.gui.sections['test_section'].add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
         self.gui.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
-        
-        tree = self.gui.add_section('tree_section', title=True, return_section=True)
-        tree.add_widget(type='tree')
-        
+
+        tree_section = self.gui.add_section('tree_section', title=True, return_section=True)
+        tree = tree_section.add_widget(type='tree', return_widget=True)
+
+        tree.insert_column('TestCol1')
+        tree.insert_column('TestCol2')
+        tree.insert_column('TestCol3')
+
+
         self.gui.mainloop()
         self.assertTrue(True)
 
