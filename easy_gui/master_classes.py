@@ -314,10 +314,15 @@ class Tree(Widget):
         if parent_row is None:
             new_row = self._widget.insert('', 'end', text=text, values=values, open=open)
         else:
-            print(parent_row)
             new_row = self._widget.insert(parent_row, 'end', text=text, values=values, open=open)
         if return_row:
             return new_row
+
+    def clear(self) -> None:
+        '''
+        Clear all items from the tree.
+        '''
+        self._widget.delete(*self._widget.get_children())
 
     def up_arrow(self, a) -> None:
         '''
