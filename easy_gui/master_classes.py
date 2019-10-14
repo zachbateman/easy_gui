@@ -216,7 +216,7 @@ class Widget(tk.Frame):
         self._widget.pack()
 
 
-    def bind_click(self, command_func=lambda e: print('TEST'), separate_thread=False) -> None:
+    def bind_click(self, command_func, separate_thread=False) -> None:
         '''
         Bind a left-mouse click to the widget to trigger a target "command_func" function.
         Note that the "_widget" attribute of subclasses is assumed to be the tkinter widget itself!!!
@@ -236,7 +236,7 @@ class Widget(tk.Frame):
 
 
 class Button(Widget):
-    def __init__(self, master=None, text='button', command_func=lambda e: print('TEST'), separate_thread=False, **kwargs) -> None:
+    def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
         super().__init__(self)
         self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, **kwargs)
         self.bind_click(command_func, separate_thread)
