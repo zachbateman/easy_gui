@@ -3,11 +3,13 @@ Python module containing "Master" classes of easy_gui project.
 The classes in here are designed to be subclassed in user applications.
 '''
 import tkinter as tk
+import tkinter.scrolledtext
 from tkinter import ttk
 from .styles import BaseStyle
 import os
 import sys
 import threading
+from typing import List
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -146,6 +148,10 @@ class Section(tk.Frame):
             new_widget = StdOutBox(master=self, **kwargs)
             new_widget.place()
             self.widgets[new_widget_name('stdout')] = new_widget
+        elif type.lower() == 'scrolledtext':
+            new_widget = ScrolledText(master=self, **kwargs)
+            new_widget.place()
+            self.widgets[new_widget_name('scrolledtext')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
         if return_widget:
@@ -390,6 +396,16 @@ class StdOutBox(Widget):
         Makes self a 'file-like object'.
         '''
         pass
+
+
+class ScrolledText(Widget):
+    def __init__(self, master=None, **kwargs) -> None:
+        super().__init__()
+        self._widget = tk.scrolledtext.ScrolledText(master, wrap=tk.WORD, **kwargs)
+
+    def get(self) -> List[str]:
+        '''Return the lines of text in this widget'''
+        return list(self._widget.get(1.0, tk.END).split('\n'))
 
 
 class DatePicker(Widget):
