@@ -330,6 +330,26 @@ class Tree(Widget):
         '''
         self._widget.delete(*self._widget.get_children())
 
+    def get_iids(self) -> List[str]:
+        '''
+        Return list of all row iid values in current order of rows.
+        '''
+        def children_iids(parent) -> List[str]:
+            '''Recursive function that returns (in order) all children of a given iid'''
+            running_iids = []
+            for child in self._widget.get_children(parent):
+                running_iids.append(child)
+                grandkids = children_iids(child)
+                if grandkids != ():
+                    for grandkid in grandkids:
+                        running_iids.extend(children_iids(grandkid))
+            return running_iids
+        iids = []
+        for top_level in self._widget.get_children():
+            iids.append(top_level)
+            iids.extend(children_iids(top_level))
+        return iids
+
     def up_arrow(self, a) -> None:
         '''
         Go up a selection in the tree on user's up-arrow.
