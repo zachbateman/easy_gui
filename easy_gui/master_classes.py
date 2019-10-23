@@ -350,17 +350,42 @@ class Tree(Widget):
             iids.extend(children_iids(top_level))
         return iids
 
+    def _up_down_arrow(self, a, up_or_down: str) -> None:
+        '''
+        Allows Up or Down arrow to change the row selection in the tree
+        '''
+        current_row = self._widget.focus()
+        iids = self.get_iids()
+        for iid in iids:  # unselect all rows
+            self._widget.item(iid, tags='0')
+
+        current_row_iid_index = [index for index, iid in enumerate(iids) if iid == current_row][0]
+
+        if up_or_down == 'up':
+            if current_row == iids[0]:
+                new_iid = current_row
+            else:
+                new_iid = iids[current_row_iid_index - 1]
+        elif up_or_down == 'down':
+            if current_row == iids[-1]:
+                new_iid = current_row
+            else:
+                new_iid = iids[current_row_iid_index + 1]
+
+        self._widget.item(new_iid, tags='selected')
+        self._widget.focus(new_iid)
+
     def up_arrow(self, a) -> None:
         '''
         Go up a selection in the tree on user's up-arrow.
         '''
-        pass
+        self._up_down_arrow(a, 'up')
 
     def down_arrow(self, a) -> None:
         '''
         Go down a selection in the tree on user's down-arrow.
         '''
-        pass
+        self._up_down_arrow(a, 'down')
 
 
 class MatplotlibPlot(Widget):
