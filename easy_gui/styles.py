@@ -6,7 +6,7 @@ from tkinter import font
 
 class BaseStyle():
     '''
-    Class with most fundamental level of styling.
+    Style class with most fundamental level of styling.
     '''
     def __init__(self) -> None:
         self.window_color = '#DEE'
@@ -14,7 +14,7 @@ class BaseStyle():
         self.menu_color = 'lightgrey'
 
         # self.font = font.Font(family='Helvetica', size=14, weight='normal')
-        self.text_color = '#000'
+        self.text_color = '#111'
 
         self.frame_padx = 5
         self.frame_pady = 5
@@ -25,3 +25,19 @@ class BaseStyle():
 
         self.widget_bg_color = self.section_color
         self.button_color = '#8AC'
+
+
+
+class DarkStyle(BaseStyle):
+    '''
+    Style with a dark theme.
+
+    Inherits from BaseStyle and overwrites settings where appropriate.
+    '''
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.window_color = '#444'
+        self.section_color = '#555'
+        self.text_color = '#FFF'
+        self.widget_bg_color = self.section_color

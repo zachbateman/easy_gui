@@ -252,7 +252,7 @@ class Button(Widget):
 class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__()
-        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, **kwargs)
+        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, fg=EasyGUI.style.text_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, **kwargs)
 
 
 class Entry(Widget):
