@@ -180,7 +180,6 @@ class Section(tk.Frame):
         new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, return_widget=True)
         new_widget.draw_plot(mpl_figure=mpl_figure)
 
-
     def replace_widget(self, widget_name='', type='label', text='', return_widget=False, **kwargs):
         '''
         Replace a widget with a new one.
@@ -193,6 +192,20 @@ class Section(tk.Frame):
             self.widgets[widget_name] = new_widget
         if return_widget:
             return new_widget
+
+    @property
+    def width(self) -> float:
+        '''
+        Estimate and return width desired by this Section.
+        '''
+        return float(max(widget.width for widget in self.widgets.values()))
+
+    @property
+    def height(self) -> float:
+        '''
+        Estimate and return height desired by this Section.
+        '''
+        return float(sum(widget.height for widget in self.widgets.values()))
 
 
 
@@ -231,6 +244,19 @@ class Widget(tk.Frame):
     def destroy(self):
         self._widget.destroy()
 
+    @property
+    def width(self) -> float:
+        '''
+        Return width used by this Widget.
+        '''
+        return float(self._widget['width'])
+
+    @property
+    def height(self) -> float:
+        '''
+        Return height used by this Widget.
+        '''
+        return float(self._widget['height'])
 
 
 
@@ -238,6 +264,7 @@ class Widget(tk.Frame):
 class Button(Widget):
     def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
         super().__init__(self)
+        self.text = text
         self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, **kwargs)
         self.bind_click(command_func, separate_thread)
 
@@ -248,11 +275,44 @@ class Button(Widget):
         '''
         self._widget.pack(padx=EasyGUI.style.button_padx, pady=EasyGUI.style.button_pady)
 
+    @property
+    def width(self) -> float:
+        '''
+        Return width used by this Button.
+        Overwrites Widget method.
+        '''
+        return 6.6 * len(self.text)
+
+    @property
+    def height(self) -> float:
+        '''
+        Return height used by this Button.
+        Overwrites Widget method.
+        '''
+        return 39
+
 
 class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__()
+        self.text = text
         self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, fg=EasyGUI.style.text_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, **kwargs)
+
+    @property
+    def width(self) -> float:
+        '''
+        Return width used by this Label.
+        Overwrites Widget method.
+        '''
+        return 6.6 * len(self.text)
+
+    @property
+    def height(self) -> float:
+        '''
+        Return height used by this Label.
+        Overwrites Widget method.
+        '''
+        return 39
 
 
 class Entry(Widget):
