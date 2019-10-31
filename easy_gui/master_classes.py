@@ -26,6 +26,7 @@ class EasyGUI(tk.Tk):
 
     def __init__(self) -> None:
         super().__init__()
+        EasyGUI.style.create_font()  # have to generate font.Font object after initial tk root window is created
 
         self.iconbitmap(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'))
         self.title('EasyGUI')
@@ -265,7 +266,7 @@ class Button(Widget):
     def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
         super().__init__(self)
         self.text = text
-        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, **kwargs)
+        self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, font=EasyGUI.style.font, **kwargs)
         self.bind_click(command_func, separate_thread)
 
     def place(self) -> None:
@@ -296,7 +297,8 @@ class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__()
         self.text = text
-        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, fg=EasyGUI.style.text_color, padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, **kwargs)
+        self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, fg=EasyGUI.style.text_color,
+                                padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, font=EasyGUI.style.font, **kwargs)
 
     @property
     def width(self) -> float:

@@ -13,7 +13,10 @@ class BaseStyle():
         self.section_color = '#DDE5EE'
         self.menu_color = 'lightgrey'
 
-        # self.font = font.Font(family='Helvetica', size=14, weight='normal')
+        # _font attr provides parameters used to modify Font generated and used (don't have to provide all - leave out for defaults)
+        self._font = {'size': 10, 'weight': 'normal'}
+        # self._font = {'family': 'Helvetica', 'size': 10, 'weight': 'normal'}
+
         self.text_color = '#111'
 
         self.frame_padx = 5
@@ -25,6 +28,18 @@ class BaseStyle():
 
         self.widget_bg_color = self.section_color
         self.button_color = '#8AC'
+
+    def create_font(self):
+        '''
+        Create self.font attribute as a tkinter font.Font object.
+        A font.Font object CAN ONLY BE CREATED AFTER CREATING A ROOT WINDOW...
+        ...hence, this method is called in the EasyGUI class to transform the specified
+        "_font" dict attribute into a font.Font "font" attribute.
+        '''
+        if hasattr(self, '_font'):
+            self.font = font.Font(**self._font)
+        else:
+            self.font = None  # passing None to widget creation will use default Tkinter Fonts
 
 
 
