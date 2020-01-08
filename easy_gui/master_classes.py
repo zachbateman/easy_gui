@@ -36,12 +36,26 @@ class EasyGUI(tk.Tk):
         self.sections: dict = {}
 
 
-    def mouse_scroll(self, event) -> None:
-        # TODO
-        pass
+    def create_gui(self) -> None:
+        '''
+        Positions GUI elements in window and starts tkinter main loop.
+        CALL THIS at the end of creating the GUI to make it run.
+        '''
+        for name, section in self.sections.items():
+            section.create_section()
+        self.mainloop()
 
+    def configure_grid(self, grid_configuration: List[str]) -> None:
+        '''
+        Specify full-window layout with CSS grid-template-area style list of strings.
+        - Each item in provided grid_configuration corresponds to a grid row and spaces
+        delimit each cell.
+        - Individual cells or rectangular groups of contiguous cells may be indicated by name
+        while unnamed cells are specified by one or more periods.
+        '''
+        self.grid_configuration = grid_configuration
 
-    def add_section(self, name='', title=False, return_section=False) -> None:
+    def add_section(self, name='', title=False, return_section=False, grid_area=None) -> None:
         '''
         Add a Section object to the root window.
         '''
@@ -49,7 +63,7 @@ class EasyGUI(tk.Tk):
             name = f'section{len(self.sections) + 1}'
         if name in self.sections:
             raise ValueError('Unable to add section as a section with the given name already exists!')
-        section = Section(name, title)
+        section = Section(name, title, grid_area)
         self.sections[name] = section
         if return_section:
             return section
@@ -86,28 +100,51 @@ class EasyGUI(tk.Tk):
 
         self.config(menu=self.menu)
 
+    def mouse_scroll(self, event) -> None:
+        # TODO
+        pass
+
 
 
 class Section(tk.Frame):
     '''
     A Section is a tk.Frame used for storing and managing widgets.
     '''
-    def __init__(self, name='', title=False) -> None:
+    def __init__(self, name='', title=False, grid_area=None) -> None:
         super().__init__(borderwidth=1,
                                 bg=EasyGUI.style.section_color,
                                 padx=EasyGUI.style.frame_padx,
                                 pady=EasyGUI.style.frame_pady,
                                 relief='ridge')
         self.name = name
-
+        self.grid_area = grid_area
         self.widgets: dict = {}
-        self.pack()
         if title:  # title kwargs can be provided as True or a string
             if isinstance(title, str):  # if string, use title for label text
                 self.add_widget(type='label', text=title)
             elif title == True:  # if True, use the name as the label text
                 self.add_widget(type='label', text=name)
 
+    def create_section(self):
+        '''
+        Positions this section within the parent along with
+        positioning all children (Sections and/or Widgets).
+        '''
+        self.position()
+        for name, child in self.widgets.items():
+            try:
+                child.create_section()  # if child is another Section object
+            except AttributeError:
+                child.position()  # if child is a Widget object
+
+    def position(self) -> None:
+        '''
+        Physically position this Section within its parent container.
+        '''
+        if self.grid_area:
+            pass
+        else:
+            self.pack()
 
     def add_widget(self, type='label', text='', widget_name=None, return_widget=False, **kwargs):
         '''
@@ -121,35 +158,27 @@ class Section(tk.Frame):
 
         if type.lower() in ['label', 'lbl']:
             new_widget = Label(master=self, text=text, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('label')] = new_widget
         elif type.lower() in ['button', 'btn']:
             new_widget = Button(master=self, text=text, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('button')] = new_widget
         elif type.lower() == 'entry':
             new_widget = Entry(master=self, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('entry')] = new_widget
         elif type.lower() == 'dropdown':
             new_widget = DropDown(master=self, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('dropdown')] = new_widget
         elif type.lower() == 'tree':
             new_widget = Tree(master=self, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('tree')] = new_widget
         elif type.lower() == 'matplotlib':
             new_widget = MatplotlibPlot(master=self, section=self, widget_name=new_widget_name('matplotlibplot'), **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('matplotlibplot')] = new_widget
         elif type.lower() == 'stdout':
             new_widget = StdOutBox(master=self, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('stdout')] = new_widget
         elif type.lower() == 'scrolledtext':
             new_widget = ScrolledText(master=self, **kwargs)
-            new_widget.place()
             self.widgets[new_widget_name('scrolledtext')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
@@ -192,6 +221,16 @@ class Section(tk.Frame):
         if return_widget:
             return new_widget
 
+    def configure_grid(self, grid_configuration: List[str]) -> None:
+        '''
+        Specify sub-Section layout for Widgets with CSS grid-template-area style list of strings.
+        - Each item in provided grid_configuration corresponds to a grid row and spaces
+        delimit each cell.
+        - Individual cells or rectangular groups of contiguous cells may be indicated by name
+        while unnamed cells are specified by one or more periods.
+        '''
+        self.grid_configuration = grid_configuration
+
     @property
     def width(self) -> float:
         '''
@@ -215,18 +254,20 @@ class Widget(tk.Frame):
     To be subclassed into specific EasyGUI widgets.
     Class assumes the "_widget" attribute is the actual tkinter widget (if used)
     '''
-    def __init__(self, master=None, bg=None, **kwargs) -> None:
+    def __init__(self, master=None, bg=None, grid_area=None, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.grid_area = grid_area
         self.configure(background=EasyGUI.style.widget_bg_color)
 
 
-    def place(self) -> None:
+    def position(self) -> None:
         '''
-        Place widget in parent Section; just pack for now.
-        Later, get more sophisticated with positioning...
+        Physically position this Widget within its parent Section.
         '''
-        self._widget.pack()
-
+        if self.grid_area:
+            pass
+        else:
+            self._widget.pack()
 
     def bind_click(self, command_func, separate_thread=False) -> None:
         '''
