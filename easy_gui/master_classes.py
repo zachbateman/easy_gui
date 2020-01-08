@@ -34,8 +34,6 @@ class EasyGUI(tk.Tk):
         self.configure(background=self.style.window_color)
 
         self.sections: dict = {}
-        for name, section in self.sections.items():
-            section.pack()
 
 
     def mouse_scroll(self, event) -> None:
