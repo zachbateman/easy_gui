@@ -6,3 +6,5 @@ build/
 dist/
 MANIFEST
 easy_gui.egg-info/
+
+*venv*
