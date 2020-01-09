@@ -9,7 +9,7 @@ from .styles import BaseStyle
 import os
 import sys
 import threading
-from typing import List
+from typing import List, Dict
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -17,8 +17,45 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 
+class GridMaster():
+    def __init__(self):
+        self.grid_areas = {'test': 'testing'}
 
-class EasyGUI(tk.Tk):
+    def configure_grid(self, grid_configuration: List[str]) -> Dict[str, int]:
+        '''
+        Specify full-window layout with CSS grid-template-area style list of strings.
+        - Each item in provided grid_configuration corresponds to a grid row and spaces
+        delimit each cell.
+        - Individual cells or rectangular groups of contiguous cells may be indicated by name
+        while unnamed cells are specified by one or more periods.
+        '''
+        self.grid_configuration = grid_configuration
+        self.grid_rows = len(grid_configuration)
+        self.grid_columns = len(grid_configuration[0].split())
+        for row in grid_configuration:
+            if len(grid_configuration[0].split()) != self.grid_columns:
+                print('ERROR!  Differing number of grid columns specified below:')
+                print(grid_configuration)
+
+        names = set(cell for row in grid_configuration for cell in row.split() if '.' not in cell)
+        for name in names:
+            first_row, last_row, first_column, last_column = None, None, None, None
+            for i, row in enumerate(grid_configuration):
+                if name in row:
+                    if first_row is None:
+                        first_row = i  # will stay fixed at the first row containing name
+                    last_row = i  # will continue to increase for multiple rows
+                    if first_column is None:
+                        row_list = row.split()
+                        first_column = row_list.index(name)  # get far left column of name
+                        last_column = len(row_list) - row_list[::-1].index(name) - 1  # reverse to get far right column
+
+            self.grid_areas[name] = {'first_row': first_row, 'last_row': last_row,
+                                'first_column': first_column, 'last_column': last_column}
+
+
+
+class EasyGUI(tk.Tk): #, GridMaster):
     '''
     Main class to be subclassed for full GUI window.
     '''
@@ -26,6 +63,7 @@ class EasyGUI(tk.Tk):
 
     def __init__(self) -> None:
         super().__init__()
+        GridMaster.__init__(self)
         EasyGUI.style.create_font()  # have to generate font.Font object after initial tk root window is created
 
         self.iconbitmap(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'))
@@ -45,15 +83,6 @@ class EasyGUI(tk.Tk):
             section.create_section()
         self.mainloop()
 
-    def configure_grid(self, grid_configuration: List[str]) -> None:
-        '''
-        Specify full-window layout with CSS grid-template-area style list of strings.
-        - Each item in provided grid_configuration corresponds to a grid row and spaces
-        delimit each cell.
-        - Individual cells or rectangular groups of contiguous cells may be indicated by name
-        while unnamed cells are specified by one or more periods.
-        '''
-        self.grid_configuration = grid_configuration
 
     def add_section(self, name='', title=False, return_section=False, grid_area=None) -> None:
         '''
@@ -63,7 +92,7 @@ class EasyGUI(tk.Tk):
             name = f'section{len(self.sections) + 1}'
         if name in self.sections:
             raise ValueError('Unable to add section as a section with the given name already exists!')
-        section = Section(name, title, grid_area)
+        section = Section(parent=self, name=name, title=title, grid_area=grid_area)
         self.sections[name] = section
         if return_section:
             return section
@@ -106,16 +135,19 @@ class EasyGUI(tk.Tk):
 
 
 
-class Section(tk.Frame):
+class Section(tk.Frame, GridMaster):
     '''
     A Section is a tk.Frame used for storing and managing widgets.
     '''
-    def __init__(self, name='', title=False, grid_area=None) -> None:
+    def __init__(self, parent=None, name='', title=False, grid_area=None) -> None:
         super().__init__(borderwidth=1,
-                                bg=EasyGUI.style.section_color,
-                                padx=EasyGUI.style.frame_padx,
-                                pady=EasyGUI.style.frame_pady,
-                                relief='ridge')
+                         bg=EasyGUI.style.section_color,
+                         padx=EasyGUI.style.frame_padx,
+                         pady=EasyGUI.style.frame_pady,
+                         relief='ridge')
+        GridMaster.__init__(self)
+        breakpoint()
+        self.parent = parent
         self.name = name
         self.grid_area = grid_area
         self.widgets: dict = {}
@@ -142,11 +174,12 @@ class Section(tk.Frame):
         Physically position this Section within its parent container.
         '''
         if self.grid_area:
-            pass
+            bounds = self.parent.grid_areas[self.grid_area]
+            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
         else:
             self.pack()
 
-    def add_widget(self, type='label', text='', widget_name=None, return_widget=False, **kwargs):
+    def add_widget(self, type='label', text='', widget_name=None, grid_area=None, return_widget=False, **kwargs):
         '''
         Add a Widget object to this section
         '''
@@ -157,28 +190,28 @@ class Section(tk.Frame):
                 return f'{len(self.widgets) + 1}' + '_' + w_type
 
         if type.lower() in ['label', 'lbl']:
-            new_widget = Label(master=self, text=text, **kwargs)
+            new_widget = Label(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('label')] = new_widget
         elif type.lower() in ['button', 'btn']:
-            new_widget = Button(master=self, text=text, **kwargs)
+            new_widget = Button(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('button')] = new_widget
         elif type.lower() == 'entry':
-            new_widget = Entry(master=self, **kwargs)
+            new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
         elif type.lower() == 'dropdown':
-            new_widget = DropDown(master=self, **kwargs)
+            new_widget = DropDown(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('dropdown')] = new_widget
         elif type.lower() == 'tree':
-            new_widget = Tree(master=self, **kwargs)
+            new_widget = Tree(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('tree')] = new_widget
         elif type.lower() == 'matplotlib':
-            new_widget = MatplotlibPlot(master=self, section=self, widget_name=new_widget_name('matplotlibplot'), **kwargs)
+            new_widget = MatplotlibPlot(master=self, section=self, widget_name=new_widget_name('matplotlibplot'), grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('matplotlibplot')] = new_widget
         elif type.lower() == 'stdout':
-            new_widget = StdOutBox(master=self, **kwargs)
+            new_widget = StdOutBox(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('stdout')] = new_widget
         elif type.lower() == 'scrolledtext':
-            new_widget = ScrolledText(master=self, **kwargs)
+            new_widget = ScrolledText(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('scrolledtext')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
@@ -248,7 +281,6 @@ class Section(tk.Frame):
 
 
 
-
 class Widget(tk.Frame):
     '''
     To be subclassed into specific EasyGUI widgets.
@@ -256,6 +288,7 @@ class Widget(tk.Frame):
     '''
     def __init__(self, master=None, bg=None, grid_area=None, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.parent = master  # master attr used in tkinter; parent attr used in this code
         self.grid_area = grid_area
         self.configure(background=EasyGUI.style.widget_bg_color)
 
@@ -265,7 +298,13 @@ class Widget(tk.Frame):
         Physically position this Widget within its parent Section.
         '''
         if self.grid_area:
-            pass
+            # try:
+            breakpoint()
+            bounds = self.parent.grid_areas[self.grid_area]
+            # except AttributeError:
+            breakpoint()
+
+            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
         else:
             self._widget.pack()
 
@@ -303,8 +342,10 @@ class Widget(tk.Frame):
 
 class Button(Widget):
     def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
-        super().__init__(self)
+        super().__init__(master=master, **kwargs)
+        # self.parent = master
         self.text = text
+        del kwargs['grid_area']
         self._widget = tk.Button(master=master, text=text, highlightbackground=EasyGUI.style.button_color, font=EasyGUI.style.font, **kwargs)
         self.bind_click(command_func, separate_thread)
 
