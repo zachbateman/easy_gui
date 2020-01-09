@@ -19,7 +19,7 @@ from matplotlib.figure import Figure
 
 class GridMaster():
     def __init__(self):
-        self.grid_areas = {'test': 'testing'}
+        self.grid_areas = {}
 
     def configure_grid(self, grid_configuration: List[str]) -> Dict[str, int]:
         '''
@@ -36,6 +36,7 @@ class GridMaster():
             if len(grid_configuration[0].split()) != self.grid_columns:
                 print('ERROR!  Differing number of grid columns specified below:')
                 print(grid_configuration)
+                return
 
         names = set(cell for row in grid_configuration for cell in row.split() if '.' not in cell)
         for name in names:
@@ -55,7 +56,7 @@ class GridMaster():
 
 
 
-class EasyGUI(tk.Tk): #, GridMaster):
+class EasyGUI(tk.Tk, GridMaster):
     '''
     Main class to be subclassed for full GUI window.
     '''
@@ -146,7 +147,6 @@ class Section(tk.Frame, GridMaster):
                          pady=EasyGUI.style.frame_pady,
                          relief='ridge')
         GridMaster.__init__(self)
-        breakpoint()
         self.parent = parent
         self.name = name
         self.grid_area = grid_area
@@ -254,16 +254,6 @@ class Section(tk.Frame, GridMaster):
         if return_widget:
             return new_widget
 
-    def configure_grid(self, grid_configuration: List[str]) -> None:
-        '''
-        Specify sub-Section layout for Widgets with CSS grid-template-area style list of strings.
-        - Each item in provided grid_configuration corresponds to a grid row and spaces
-        delimit each cell.
-        - Individual cells or rectangular groups of contiguous cells may be indicated by name
-        while unnamed cells are specified by one or more periods.
-        '''
-        self.grid_configuration = grid_configuration
-
     @property
     def width(self) -> float:
         '''
@@ -298,13 +288,12 @@ class Widget(tk.Frame):
         Physically position this Widget within its parent Section.
         '''
         if self.grid_area:
-            # try:
-            breakpoint()
-            bounds = self.parent.grid_areas[self.grid_area]
-            # except AttributeError:
-            breakpoint()
-
-            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+            try:
+                bounds = self.parent.grid_areas[self.grid_area]
+                self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+            except KeyError:
+                print(f'{self.grid_area} not found in parent\'s grid areas.\nResorting to pack.')
+                self._widget.pack()
         else:
             self._widget.pack()
 
