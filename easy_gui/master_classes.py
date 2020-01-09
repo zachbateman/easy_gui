@@ -5,6 +5,7 @@ The classes in here are designed to be subclassed in user applications.
 import tkinter as tk
 import tkinter.scrolledtext
 from tkinter import ttk
+from tkinter import _tkinter
 from .styles import BaseStyle
 import os
 import sys
@@ -157,7 +158,7 @@ class Section(tk.Frame, GridMaster):
             elif title == True:  # if True, use the name as the label text
                 self.add_widget(type='label', text=name)
 
-    def create_section(self):
+    def create_section(self, force_pack: bool=False):
         '''
         Positions this section within the parent along with
         positioning all children (Sections and/or Widgets).
@@ -167,15 +168,24 @@ class Section(tk.Frame, GridMaster):
             try:
                 child.create_section()  # if child is another Section object
             except AttributeError:
-                child.position()  # if child is a Widget object
+                child.position(force_pack)  # if child is a Widget object
 
-    def position(self) -> None:
+    def position(self, force_pack: bool=False) -> None:
         '''
         Physically position this Section within its parent container.
         '''
-        if self.grid_area:
-            bounds = self.parent.grid_areas[self.grid_area]
-            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+        if self.grid_area and not force_pack:
+            try:
+                bounds = self.parent.grid_areas[self.grid_area]
+                try:
+                    self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+                except _tkinter.TclError:
+                    print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.'
+                           '\nUsing "pack" placement instead.')
+                    self.parent.create_section(force_pack=True)  # go back and fully recreate section forcing all children to be packed
+            except KeyError:
+                print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to pack.')
+                self.pack()
         else:
             self.pack()
 
@@ -283,16 +293,21 @@ class Widget(tk.Frame):
         self.configure(background=EasyGUI.style.widget_bg_color)
 
 
-    def position(self) -> None:
+    def position(self, force_pack: bool=False) -> None:
         '''
         Physically position this Widget within its parent Section.
         '''
-        if self.grid_area:
+        if self.grid_area and not force_pack:
             try:
                 bounds = self.parent.grid_areas[self.grid_area]
-                self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+                try:
+                    self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+                except _tkinter.TclError:
+                    print(f'\n--- GRID FAILED for Widget: "{self}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.'
+                           '\nUsing "pack" placement instead.')
+                    self.parent.create_section(force_pack=True)  # go back and fully recreate section forcing all children to be packed
             except KeyError:
-                print(f'{self.grid_area} not found in parent\'s grid areas.\nResorting to pack.')
+                print(f'"{self.grid_area}" not found in "{self.parent.name}" Section grid areas.\nResorting to pack.')
                 self._widget.pack()
         else:
             self._widget.pack()
