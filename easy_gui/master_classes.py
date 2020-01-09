@@ -178,7 +178,7 @@ class Section(tk.Frame, GridMaster):
             try:
                 bounds = self.parent.grid_areas[self.grid_area]
                 try:
-                    self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+                    self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
                 except _tkinter.TclError:
                     print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.'
                            '\nUsing "pack" placement instead.')
