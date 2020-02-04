@@ -379,8 +379,9 @@ class Button(Widget):
 
 class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
         self.text = text
+        del kwargs['grid_area']
         self._widget = tk.Label(master=master, text=text, bg=EasyGUI.style.widget_bg_color, fg=EasyGUI.style.text_color,
                                 padx=EasyGUI.style.label_padx, pady=EasyGUI.style.label_pady, font=EasyGUI.style.font, **kwargs)
 
@@ -405,6 +406,7 @@ class Entry(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
         self.strvar = tk.StringVar()
+        del kwargs['grid_area']
         self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
 
     def get(self):
@@ -416,6 +418,7 @@ class DropDown(Widget):
         super().__init__()
         self.strvar = tk.StringVar()
         self.dropdown_options = dropdown_options
+        del kwargs['grid_area']
         self._widget = ttk.Combobox(master, textvariable=self.strvar, values=dropdown_options, **kwargs)
 
     def get(self):
@@ -430,6 +433,7 @@ class Tree(Widget):
     def __init__(self, master=None, tree_col_header: str='Name', tree_col_width: int=120, **kwargs) -> None:
         super().__init__()
 
+        del kwargs['grid_area']
         self._widget = ttk.Treeview(master, columns=(), style='Treeview', show='tree headings', height=30, **kwargs)
         self.tree_col_header = tree_col_header
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
@@ -540,6 +544,7 @@ class MatplotlibPlot(Widget):
         self.section = section  # grabbing handle to Section so IT can handle replotting
         self.widget_name = widget_name
         self.kwargs = kwargs
+        del kwargs['grid_area']
         self._widget = tk.Canvas(master=master, **kwargs)
         self.plot_drawn = False
 
@@ -573,6 +578,7 @@ class MatplotlibPlot(Widget):
 class StdOutBox(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
+        del kwargs['grid_area']
         self._widget = tk.Text(master, wrap='word', **kwargs)
         sys.stdout = self
 
@@ -592,6 +598,7 @@ class StdOutBox(Widget):
 class ScrolledText(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__()
+        del kwargs['grid_area']
         self._widget = tk.scrolledtext.ScrolledText(master, wrap=tk.WORD, **kwargs)
 
     def get(self) -> List[str]:
