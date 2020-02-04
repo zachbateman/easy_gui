@@ -43,7 +43,7 @@ class GridMaster():
         for name in names:
             first_row, last_row, first_column, last_column = None, None, None, None
             for i, row in enumerate(grid_configuration):
-                if name in row:
+                if name in row.split():
                     if first_row is None:
                         first_row = i  # will stay fixed at the first row containing name
                     last_row = i  # will continue to increase for multiple rows
@@ -404,7 +404,7 @@ class Label(Widget):
 
 class Entry(Widget):
     def __init__(self, master=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
         self.strvar = tk.StringVar()
         del kwargs['grid_area']
         self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
@@ -415,7 +415,7 @@ class Entry(Widget):
 
 class DropDown(Widget):
     def __init__(self, master=None, dropdown_options=[], **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
         self.strvar = tk.StringVar()
         self.dropdown_options = dropdown_options
         del kwargs['grid_area']
@@ -431,7 +431,7 @@ class DropDown(Widget):
 
 class Tree(Widget):
     def __init__(self, master=None, tree_col_header: str='Name', tree_col_width: int=120, **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
 
         del kwargs['grid_area']
         self._widget = ttk.Treeview(master, columns=(), style='Treeview', show='tree headings', height=30, **kwargs)
@@ -540,7 +540,7 @@ class Tree(Widget):
 
 class MatplotlibPlot(Widget):
     def __init__(self, master=None, section=None, widget_name=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
         self.section = section  # grabbing handle to Section so IT can handle replotting
         self.widget_name = widget_name
         self.kwargs = kwargs
@@ -577,7 +577,7 @@ class MatplotlibPlot(Widget):
 
 class StdOutBox(Widget):
     def __init__(self, master=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
         del kwargs['grid_area']
         self._widget = tk.Text(master, wrap='word', **kwargs)
         sys.stdout = self
@@ -597,7 +597,7 @@ class StdOutBox(Widget):
 
 class ScrolledText(Widget):
     def __init__(self, master=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
         del kwargs['grid_area']
         self._widget = tk.scrolledtext.ScrolledText(master, wrap=tk.WORD, **kwargs)
 
@@ -611,6 +611,6 @@ class DatePicker(Widget):
     Widget for selecting a date - calendar style.
     '''
     def __init__(self, master=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(master=master, **kwargs)
 
         # TODO: Make this widget...
