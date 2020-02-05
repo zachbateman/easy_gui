@@ -7,27 +7,18 @@ import easy_gui
 
 class TestGUI(easy_gui.EasyGUI):
     def __init__(self):
-        super().__init__()
+        self.add_section('test_section')
+        self.sections['test_section'].add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
+        self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
 
-
+        self.add_section('output_section')
+        self.sections['output_section'].add_widget(type='stdout')
 
 
 
 class TestEasyGUI(unittest.TestCase):
-
-    def setUp(self):
-        self.gui = TestGUI()
-
-
     def test_gui_creation(self):
-        self.gui.add_section('test_section')
-        self.gui.sections['test_section'].add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
-        self.gui.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
-        
-        self.gui.add_section('output_section')
-        self.gui.sections['output_section'].add_widget(type='stdout')
-        
-        self.gui.mainloop()
+        gui = TestGUI()
         self.assertTrue(True)
 
 

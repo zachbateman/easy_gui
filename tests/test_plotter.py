@@ -12,8 +12,6 @@ data = [(1, 1), (2, 3), (3, 5), (4, 4), (5, 7), (6, 7)]
 
 class PlotterGUI(easy_gui.EasyGUI):
     def __init__(self):
-        super().__init__()
-
         self.add_section('controls')
         self.sections['controls'].add_widget(type='button', text='Scatter Plot', command_func=self.draw_scatter)
         self.sections['controls'].add_widget(type='button', text='Line Plot', command_func=self.draw_line)
@@ -37,13 +35,8 @@ class PlotterGUI(easy_gui.EasyGUI):
 
 
 class TestPlotterGUI(unittest.TestCase):
-
-    def setUp(self):
-        self.gui = PlotterGUI()
-
-
     def test_gui(self):
-        self.gui.mainloop()
+        gui = PlotterGUI()
         self.assertTrue(True)
 
 
