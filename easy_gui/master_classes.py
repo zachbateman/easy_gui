@@ -75,6 +75,18 @@ class EasyGUI(tk.Tk, GridMaster):
 
         self.sections: dict = {}
 
+    def __init_subclass__(cls, **kwargs):
+        '''
+        Wraps user subclass __init__ to implicitly handle the EasyGUI.__init__ call along with
+        calling .create_gui() after application is fully defined in subclass __init__ method
+        '''
+        old_init = cls.__init__  # reference to original subclass method so new_init isn't recursive
+        def new_init(self, *args, **kwargs):
+            EasyGUI.__init__(self)  # in place of super().__init__() in subclass __init__
+            old_init(self, *args, **kwargs)
+            self.create_gui()  # populates GUI elements and runs tkinter mainloop
+        cls.__init__ = new_init  # overwrite subclass __init__ method
+
 
     def create_gui(self) -> None:
         '''
