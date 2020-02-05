@@ -220,6 +220,9 @@ class Section(tk.Frame, GridMaster):
         elif type.lower() == 'entry':
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
+        elif type.lower() in ['checkbox', 'checkbutton']:
+            new_widget = CheckBox(master=self, text=text, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('checkbox')] = new_widget
         elif type.lower() == 'dropdown':
             new_widget = DropDown(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('dropdown')] = new_widget
@@ -426,6 +429,18 @@ class Entry(Widget):
 
     def get(self):
         return self._widget.get()
+
+
+class CheckBox(Widget):
+    def __init__(self, master=None, text='checkbox', **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        del kwargs['grid_area']
+        self._widget = ttk.Checkbutton(master=master, text=text, offvalue=False, onvalue=True, **kwargs)
+        self._widget.invoke()  # switch from whatever starting state to checked
+        self._widget.invoke()  # switch from checked to unchecked
+
+    def get(self) -> bool:
+        return True if 'selected' in self._widget.state() else False
 
 
 class DropDown(Widget):
