@@ -211,6 +211,9 @@ class Section(tk.Frame, GridMaster):
         elif type.lower() == 'dropdown':
             new_widget = DropDown(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('dropdown')] = new_widget
+        elif type.lower() == 'listbox':
+            new_widget = ListBox(master=self, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('listbox')] = new_widget
         elif type.lower() == 'tree':
             new_widget = Tree(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('tree')] = new_widget
@@ -427,6 +430,19 @@ class DropDown(Widget):
     def set_options(self, dropdown_options):
         self._widget['values'] = dropdown_options
         self.strvar.set('')
+
+
+class ListBox(Widget):
+    def __init__(self, master=None, options=[], **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        self.options = options
+        del kwargs['grid_area']
+        self._widget = tk.Listbox(master, selectmode=tk.MULTIPLE, **kwargs)
+        for option in options:
+            self._widget.insert(tk.END, option)
+
+    def get(self) -> List[str]:
+        return sorted(self._widget.get(i) for i in self._widget.curselection())
 
 
 class Tree(Widget):
