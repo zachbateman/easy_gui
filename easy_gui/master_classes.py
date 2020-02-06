@@ -454,6 +454,13 @@ class DropDown(Widget):
     def get(self):
         return self._widget.get()
 
+    def set(self, value):
+        if value in self.dropdown_options:
+            self.strvar.set(value)
+        else:
+            print(f'Error: {value} is not in current dropdown_options.')
+            print('Please set to an existing option or use .set_options to set a new list of dropdown_options.')
+
     def set_options(self, dropdown_options):
         self._widget['values'] = dropdown_options
         self.strvar.set('')
