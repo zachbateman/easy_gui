@@ -17,11 +17,12 @@ setuptools.setup(
     keywords=['GUI', 'TKINTER', 'APPLICATION', 'SIMPLE', 'EASY'],
     package_data={'': ['resources/transparent.ico']},
     include_package_data=True,
-    install_requires=[],
+    install_requires=['matplotlib'],
     classifiers=['Development Status :: 3 - Alpha',
                    'License :: OSI Approved :: MIT License',
                    'Programming Language :: Python :: 3',
                    'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7',
+                   'Programming Language :: Python :: 3.8',
                    ]
 )
