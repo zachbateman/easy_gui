@@ -19,10 +19,10 @@ class BaseStyle():
 
         self.text_color = '#111'
 
-        self.frame_padx = 5
-        self.frame_pady = 5
-        self.label_padx = 8
-        self.label_pady = 10
+        self.frame_padx = 2
+        self.frame_pady = 2
+        self.label_padx = 4
+        self.label_pady = 2
         self.button_padx = 4
         self.button_pady = 2
 

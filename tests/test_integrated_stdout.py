@@ -12,7 +12,7 @@ class TestGUI(easy_gui.EasyGUI):
         self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
 
         self.add_section('output_section')
-        self.sections['output_section'].add_widget(type='stdout')
+        self.sections['output_section'].add_widget(type='stdout', height=20, width=40)
 
 
 

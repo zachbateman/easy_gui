@@ -70,7 +70,7 @@ class EasyGUI(tk.Tk, GridMaster):
 
         self.iconbitmap(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'))
         self.title('EasyGUI')
-        self.geometry("800x600")
+        self.geometry("200x100")
         self.configure(background=self.style.window_color)
 
         self.sections: dict = {}
@@ -624,12 +624,11 @@ class MatplotlibPlot(Widget):
             self.fig_canvas.get_tk_widget().pack(expand=True)
 
 
-
 class StdOutBox(Widget):
-    def __init__(self, master=None, **kwargs) -> None:
+    def __init__(self, master=None, height: int=10, width: int=30, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         del kwargs['grid_area']
-        self._widget = tk.Text(master, wrap='word', **kwargs)
+        self._widget = tk.Text(master, wrap='word', height=height, width=width, **kwargs)
         sys.stdout = self
 
     def write(self, s):
