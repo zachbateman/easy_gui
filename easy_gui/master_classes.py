@@ -68,7 +68,7 @@ class EasyGUI(tk.Tk, GridMaster):
         GridMaster.__init__(self)
         EasyGUI.style.create_font()  # have to generate font.Font object after initial tk root window is created
 
-        self.iconbitmap(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'))
+        self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
         self.title('EasyGUI')
         self.geometry("200x100")
         self.configure(background=self.style.window_color)
@@ -87,12 +87,19 @@ class EasyGUI(tk.Tk, GridMaster):
             self.create_gui()  # populates GUI elements and runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method
 
-    def iconbitmap(self, bitmap) -> None:
+    def icon(self, bitmap, default: bool=False) -> None:
         '''
-        Overwrite tk.Tk iconbitmap method to use altered path handling
+        Alternate method to call tk.Tk iconbitmap method using altered path handling
         so that PyInstaller can package application with specified .ico file.
+        If not default, warning message is printed on failing to locate .ico file.
         '''
-        super().iconbitmap(bitmap=resource_path(bitmap))
+        try:
+            super().iconbitmap(bitmap=resource_path(bitmap))
+        except _tkinter.TclError:
+            if default:
+                pass  # Pass silently if default .ico not found occurs when using PyInstaller and not adding transparent.ico to "datas"
+            else:
+                print(f'Cannot locate {bitmap}!  If using PyInstaller, be sure to specify this file in "datas".')
 
     def create_gui(self) -> None:
         '''
