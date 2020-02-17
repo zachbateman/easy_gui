@@ -87,6 +87,12 @@ class EasyGUI(tk.Tk, GridMaster):
             self.create_gui()  # populates GUI elements and runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method
 
+    def iconbitmap(self, bitmap) -> None:
+        '''
+        Overwrite tk.Tk iconbitmap method to use altered path handling
+        so that PyInstaller can package application with specified .ico file.
+        '''
+        super().iconbitmap(bitmap=resource_path(bitmap))
 
     def create_gui(self) -> None:
         '''
@@ -96,7 +102,6 @@ class EasyGUI(tk.Tk, GridMaster):
         for name, section in self.sections.items():
             section.create_section()
         self.mainloop()
-
 
     def add_section(self, name='', title=False, return_section=False, grid_area=None) -> None:
         '''
@@ -648,3 +653,14 @@ class DatePicker(Widget):
         super().__init__(master=master, **kwargs)
 
         # TODO: Make this widget...
+
+
+
+def resource_path(relative_path):
+    '''Get absolute path to resource to allow PyInstaller bundling.'''
+    try:
+        base_path = sys._MEIPASS  # PyInstaller-created temporary folder
+    except:
+        base_path = os.path.abspath('.')
+
+    return os.path.join(base_path, relative_path)
