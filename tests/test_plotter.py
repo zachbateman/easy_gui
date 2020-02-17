@@ -12,9 +12,10 @@ data = [(1, 1), (2, 3), (3, 5), (4, 4), (5, 7), (6, 7)]
 
 class PlotterGUI(easy_gui.EasyGUI):
     def __init__(self):
-        self.add_section('controls')
-        self.sections['controls'].add_widget(type='button', text='Scatter Plot', command_func=self.draw_scatter)
-        self.sections['controls'].add_widget(type='button', text='Line Plot', command_func=self.draw_line)
+        self.geometry('500x500')
+        controls = self.add_section('controls', return_section=True)
+        controls.add_widget(type='button', text='Scatter Plot', command_func=self.draw_scatter)
+        controls.add_widget(type='button', text='Line Plot', command_func=self.draw_line)
 
         self.display = self.add_section('display', return_section=True)
         self.plot = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
