@@ -276,9 +276,9 @@ class Section(tk.Frame, GridMaster):
         for w_name in list(self.widgets.keys()):
             self.delete_widget(w_name)
 
-    def _clear_and_recreate_plot(self, mpl_figure, widget_name, kwargs):
+    def _clear_and_recreate_plot(self, mpl_figure, widget_name, grid_area, kwargs):
         self.delete_widget(widget_name)
-        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, return_widget=True)
+        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, grid_area=grid_area, return_widget=True)
         new_widget.draw_plot(mpl_figure=mpl_figure)
         new_widget.position()  # have to reposition/create Widget
 
@@ -594,6 +594,7 @@ class MatplotlibPlot(Widget):
         super().__init__(master=master, **kwargs)
         self.section = section  # grabbing handle to Section so IT can handle replotting
         self.widget_name = widget_name
+        self.grid_area = kwargs.get('grid_area')
         self.kwargs = kwargs
         if 'grid_area' in kwargs:
             del kwargs['grid_area']
@@ -609,7 +610,7 @@ class MatplotlibPlot(Widget):
         Must fully destroy this widget to clear all of the matplotlib/tkinter objects.
         '''
         if self.plot_drawn:
-            self.section._clear_and_recreate_plot(mpl_figure, self.widget_name, self.kwargs)
+            self.section._clear_and_recreate_plot(mpl_figure, self.widget_name, self.grid_area, self.kwargs)
         else:
             self.plot_drawn = True
             self.mpl_figure = mpl_figure
