@@ -268,19 +268,8 @@ class Section(tk.Frame, GridMaster):
         self.delete_widget(widget_name)
         new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, return_widget=True)
         new_widget.draw_plot(mpl_figure=mpl_figure)
+        new_widget.position()  # have to reposition/create Widget
 
-    def replace_widget(self, widget_name='', type='label', text='', return_widget=False, **kwargs):
-        '''
-        Replace a widget with a new one.
-        '''
-        if type.lower() == 'matplotlib':
-            new_widget = MatplotlibPlot(master=self, **kwargs)
-            new_widget.place()
-            if widget_name == '':
-                widget_name = [k for k in self.widgets.keys() if 'matplotlibplot' in k][0]
-            self.widgets[widget_name] = new_widget
-        if return_widget:
-            return new_widget
 
     @property
     def width(self) -> float:
@@ -559,7 +548,7 @@ class Tree(Widget):
         for iid in iids:  # unselect all rows
             self._widget.item(iid, tags='0')
 
-        current_row_iid_index = [index for index, iid in enumerate(iids) if iid == current_row][0]
+        current_row_iid_index = next(index for index, iid in enumerate(iids) if iid == current_row)
 
         if up_or_down == 'up':
             if current_row == iids[0]:
@@ -594,7 +583,8 @@ class MatplotlibPlot(Widget):
         self.section = section  # grabbing handle to Section so IT can handle replotting
         self.widget_name = widget_name
         self.kwargs = kwargs
-        del kwargs['grid_area']
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
         self._widget = tk.Canvas(master=master, **kwargs)
         self.plot_drawn = False
 
@@ -611,17 +601,12 @@ class MatplotlibPlot(Widget):
         else:
             self.plot_drawn = True
             self.mpl_figure = mpl_figure
-
-            if not hasattr(self, 'fig_canvas'):
-                self.fig_canvas = FigureCanvasTkAgg(self.mpl_figure, self._widget)
-            else:
-                FigureCanvasTkAgg.figure = self.mpl_figure
-
-            if not hasattr(self, 'toolbar'):
-                self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
-            self.toolbar.update()
-            self.fig_canvas.draw()
+            self.fig_canvas = FigureCanvasTkAgg(self.mpl_figure, self._widget)
+            self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
             self.fig_canvas.get_tk_widget().pack(expand=True)
+
+    def __repr__(self):
+        return f'MatplotlibPlot Widget: {self.widget_name} which belongs to: {self.section}'
 
 
 class StdOutBox(Widget):
