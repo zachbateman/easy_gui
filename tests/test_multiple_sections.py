@@ -10,9 +10,11 @@ data = [(1, 1), (2, 3), (3, 5), (4, 4), (5, 7), (6, 7)]
 
 class GUI(easy_gui.EasyGUI):
     def __init__(self):
-        self.add_section('controls')
-        self.sections['controls'].add_widget(type='button', text='Scatter Plot', command_func=lambda e: print('Button1 working!'))
-        self.sections['controls'].add_widget(type='button', text='Line Plot', command_func=lambda e: print('Button2 working!'))
+        self.geometry('900x700')
+
+        controls = self.add_section('controls')
+        controls.add_widget(type='button', text='Scatter Plot', command_func=lambda e: print('Button1 working!'))
+        controls.add_widget(type='button', text='Line Plot', command_func=lambda e: print('Button2 working!'))
 
         figure = Figure(dpi=100, figsize=(2, 2))
         ax = figure.add_subplot(111)
@@ -21,10 +23,9 @@ class GUI(easy_gui.EasyGUI):
         mplotlib = self.sections['display'].add_widget(type='matplotlib', return_widget=True)
         mplotlib.draw_plot(mpl_figure=figure)
 
-        self.add_section('other_controls')
-        self.sections['other_controls'].add_widget(type='label', text='Other controls:')
-
-        self.sections['other_controls'].add_widget(type='button', text='Fun', command_func=lambda x: print('Fun'))
+        other_controls = self.add_section('other_controls')
+        other_controls.add_widget(type='label', text='Other controls:')
+        other_controls.add_widget(type='button', text='Fun', command_func=lambda x: print('Fun'))
 
         figure2 = Figure(dpi=100, figsize=(2, 2))
         ax2 = figure.add_subplot(111)

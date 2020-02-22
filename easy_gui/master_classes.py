@@ -110,7 +110,7 @@ class EasyGUI(tk.Tk, GridMaster):
             section.create_section()
         self.mainloop()
 
-    def add_section(self, name='', title=False, return_section=False, grid_area=None) -> None:
+    def add_section(self, name='', title=False, return_section=True, grid_area=None) -> None:
         '''
         Add a Section object to the root window.
         '''
