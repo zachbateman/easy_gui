@@ -618,6 +618,10 @@ class MatplotlibPlot(Widget):
             self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
             self.fig_canvas.get_tk_widget().pack(expand=True)
 
+            # Check if provided figure is wide enough to prevent unstable width changing on mouseover...
+            if mpl_figure.bbox._points[1][0] < 400:
+                print('\nCaution!  Plot Matplotlib Figure with width >=4 to prevent unstable chart width.')
+
     def __repr__(self):
         return f'MatplotlibPlot Widget: {self.widget_name} which belongs to: {self.section}'
 

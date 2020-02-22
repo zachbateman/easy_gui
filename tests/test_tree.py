@@ -7,11 +7,13 @@ import easy_gui
 
 class TestGUI(easy_gui.EasyGUI):
     def __init__(self):
+        self.geometry('500x500')
+
         self.add_section('test_section')
         self.sections['test_section'].add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
         self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
 
-        tree_section = self.add_section('tree_section', title=True, return_section=True)
+        tree_section = self.add_section('tree_section', title=True)
         tree = tree_section.add_widget(type='tree', return_widget=True)
 
         tree.insert_column('TestCol1')
