@@ -9,7 +9,7 @@ class BaseStyle():
     Style class with most fundamental level of styling.
     '''
     def __init__(self) -> None:
-        self.window_color = '#DEE'
+        self.window_color = '#DDE5EE'
         self.section_color = '#DDE5EE'
         self.menu_color = 'lightgrey'
 
@@ -18,6 +18,9 @@ class BaseStyle():
         # self._font = {'family': 'Helvetica', 'size': 10, 'weight': 'normal'}
 
         self.text_color = '#111'
+
+        self.borderwidth = 1
+        self.section_border = 'flat'  # can also be one of 'sunken', 'raised', 'groove', or 'ridge'
 
         self.frame_padx = 2
         self.frame_pady = 2
@@ -52,7 +55,7 @@ class DarkStyle(BaseStyle):
     def __init__(self) -> None:
         super().__init__()
 
-        self.window_color = '#444'
+        self.window_color = '#555'
         self.section_color = '#555'
         self.text_color = '#FFF'
         self.widget_bg_color = self.section_color

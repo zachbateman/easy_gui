@@ -110,7 +110,8 @@ class EasyGUI(tk.Tk, GridMaster):
             section.create_section()
         self.mainloop()
 
-    def add_section(self, name='', title=False, return_section=True, grid_area=None) -> None:
+    def add_section(self, name='', title=False, return_section=True, grid_area=None,
+                               borderwidth=None, relief=None) -> None:
         '''
         Add a Section object to the root window.
         '''
@@ -118,7 +119,13 @@ class EasyGUI(tk.Tk, GridMaster):
             name = f'section{len(self.sections) + 1}'
         if name in self.sections:
             raise ValueError('Unable to add section as a section with the given name already exists!')
-        section = Section(parent=self, name=name, title=title, grid_area=grid_area)
+
+        if borderwidth is None:
+            borderwidth = self.style.borderwidth
+        if relief is None:
+            relief = self.style.section_border
+        section = Section(parent=self, name=name, title=title, grid_area=grid_area,
+                                    borderwidth=borderwidth, relief=relief)
         self.sections[name] = section
         if return_section:
             return section
@@ -165,12 +172,15 @@ class Section(tk.Frame, GridMaster):
     '''
     A Section is a tk.Frame used for storing and managing widgets.
     '''
-    def __init__(self, parent=None, name='', title=False, grid_area=None) -> None:
-        super().__init__(borderwidth=1,
+    def __init__(self, parent=None, name='', title=False, grid_area=None, **kwargs) -> None:
+        borderwidth = kwargs.get('borderwidth', 1)
+        relief = kwargs.get('relief', 'ridge')
+        super().__init__(
                          bg=EasyGUI.style.section_color,
                          padx=EasyGUI.style.frame_padx,
                          pady=EasyGUI.style.frame_pady,
-                         relief='ridge')
+                         borderwidth=borderwidth,
+                         relief=relief)
         GridMaster.__init__(self)
         self.parent = parent
         self.name = name
@@ -281,7 +291,6 @@ class Section(tk.Frame, GridMaster):
         new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, grid_area=grid_area, return_widget=True)
         new_widget.draw_plot(mpl_figure=mpl_figure)
         new_widget.position()  # have to reposition/create Widget
-
 
     @property
     def width(self) -> float:
