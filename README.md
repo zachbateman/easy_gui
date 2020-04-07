@@ -17,7 +17,7 @@ easy_gui is a high-level Python library designed to simplify the process of crea
 
   class GUI(easy_gui.EasyGUI):
       def __init__(self):
-          section = self.add_section('example', return_section=True)
+          section = self.add_section('example')
           section.add_widget(type='label', text='Example Label')
           section.add_widget(type='button', text='Button', command_func=lambda x: print('TEST'))
 
@@ -35,7 +35,7 @@ easy_gui is a high-level Python library designed to simplify the process of crea
           self.title('Animal Diet Generator')
           self.geometry("425x170")
 
-          section = self.add_section('example_section', return_section=True)
+          section = self.add_section('example_section')
           section.configure_grid(['title             title         output',
                                   'label1            entry1        output',
                                   'label2            entry2        output',
@@ -58,7 +58,7 @@ easy_gui is a high-level Python library designed to simplify the process of crea
 
 # Current Features
 
-  - Quickly and easily build a GUI by subclassing the easy_gui.EasyGUI class.
+  - Quickly and easily build a GUI by subclassing easy_gui.EasyGUI.
   - Create one or more Sections to organize GUI elements.
   - Add easy_gui Widget objects to Sections:
     - Button, Label, Entry, CheckBox, DropDown, ListBox, Tree, MatplotlibPlot, StdOutBox, ScrolledText

@@ -11,7 +11,7 @@ class GUI(easy_gui.EasyGUI):  # Our application class inherits easy_gui.EasyGUI
         self.geometry("425x170")  # size of GUI window
 
         # A Section can contain individual GUI elements or other Section objects
-        section = self.add_section('example_section', return_section=True)
+        section = self.add_section('example_section')
         # If desired, use .configure_grid() to use CSS-style grid layout design!
         # ...Widgets (or Sections) are then given a grid_area for their position in the GUI
         section.configure_grid(['title                title          output',
