@@ -340,7 +340,7 @@ class Widget(tk.Frame):
         else:
             self._widget.pack()
 
-    def bind_click(self, command_func, separate_thread=False) -> None:
+    def bind_click(self, command_func, separate_thread: bool=False) -> None:
         '''
         Bind a left-mouse click to the widget to trigger a target "command_func" function.
         Note that the "_widget" attribute of subclasses is assumed to be the tkinter widget itself!!!
@@ -351,6 +351,18 @@ class Widget(tk.Frame):
             self._widget.bind('<Button-1>', threaded_command_func)
         else:
             self._widget.bind('<Button-1>', command_func)
+
+    def bind_event(self, event: str, command_func, separate_thread: bool=False) -> None:
+        '''
+        Bind an event (specified by "event" string such as '<<ComboboxSelected>>' to trigger a target "command_func" function.
+        Note that the "_widget" attribute of subclasses is assumed to be the tkinter widget itself!!!
+        '''
+        if separate_thread:
+            def threaded_command_func(*args):
+                threading.Thread(target=command_func).start()
+            self._widget.bind(event, threaded_command_func)
+        else:
+            self._widget.bind(event, command_func)
 
     def destroy(self):
         self._widget.destroy()
@@ -478,6 +490,12 @@ class DropDown(Widget):
         self._widget['values'] = dropdown_options
         self.strvar.set('')
 
+    def bind_select(self, command_func, separate_thread: bool=False):
+        '''
+        Shortcut/convenience binding method
+        '''
+        self.bind_event('<<ComboboxSelected>>', command_func, separate_thread=separate_thread)
+
 
 class ListBox(Widget):
     def __init__(self, master=None, options=[], **kwargs) -> None:
@@ -542,6 +560,12 @@ class Tree(Widget):
         Clear all items from the tree.
         '''
         self._widget.delete(*self._widget.get_children())
+
+    def bind_select(self, command_func, separate_thread=False):
+        '''
+        Shortcut/convenience binding method
+        '''
+        self.bind_event('<<TreeviewSelect>>', command_func, separate_thread=separate_thread)
 
     def get_iids(self) -> List[str]:
         '''
