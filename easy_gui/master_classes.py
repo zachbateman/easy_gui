@@ -440,6 +440,9 @@ class Entry(Widget):
     def get(self):
         return self._widget.get()
 
+    def set(self, value):
+        self.strvar.set(value)
+
 
 class CheckBox(Widget):
     def __init__(self, master=None, text='checkbox', **kwargs) -> None:
