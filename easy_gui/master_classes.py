@@ -693,6 +693,32 @@ class ScrolledText(Widget):
         return list(self._widget.get(1.0, tk.END).split('\n'))
 
 
+class Tabs(Widget):
+    def __init__(self, master=None, height: int=30, width: int=50, **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        del kwargs['grid_area']
+        self._widget = ttk.Notebook(master, height=height, width=width, **kwargs)
+
+    def bind_change(self, command_func, separate_thread: bool=False):
+        '''
+        Shortcut/convenience binding method.
+        '''
+        self.bind_event('<<NotebookTabChanged>>', command_func, separate_thread=separate_thread)
+
+
+class ProgressBar(Widget):
+    def __init__(self, master=None, orient: str='horizontal', mode='determinate', **kwargs) -> None:
+        '''mode arg can be "determinate" or "indeterminate" '''
+        super().__init__(master=master, **kwargs)
+        self.progress = ttk.DoubleVar()
+        del kwargs['grid_area']
+        self._widget = ttk.Progressbar(master, orient=orient, mode=mode, **kwargs)
+
+    def set(self, value: float=0):
+        # self._widget['value'] = value
+        self.progress = value
+
+
 class DatePicker(Widget):
     '''
     Widget for selecting a date - calendar style.
