@@ -263,6 +263,9 @@ class Section(tk.Frame, GridMaster):
         elif type.lower() == 'scrolledtext':
             new_widget = ScrolledText(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('scrolledtext')] = new_widget
+        elif type.lower() == 'progressbar':
+            new_widget = Progressbar(master=self, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('progressbar')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
         if return_widget:
@@ -680,6 +683,21 @@ class StdOutBox(Widget):
         Makes self a 'file-like object'.
         '''
         pass
+
+
+class Progressbar(easy_gui.Widget):
+    def __init__(self, master=None, length = 100, mode = 'determinate', **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        self.length = length
+        del kwargs['grid_area']
+        self._widget = ttk.Progressbar(master=master, length=length, mode='determinate', **kwargs)
+
+        self._widget['value'] = 0
+
+        def _progress_handler(w,length):
+            w['value'] += 1
+            w['value'] %= length
+        self.progress_handler = lambda: _progress_handler(self._widget, length)
 
 
 class ScrolledText(Widget):
