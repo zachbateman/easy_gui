@@ -263,8 +263,8 @@ class Section(tk.Frame, GridMaster):
         elif type.lower() == 'scrolledtext':
             new_widget = ScrolledText(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('scrolledtext')] = new_widget
-        elif type.lower() == 'progressbar':
-            new_widget = Progressbar(master=self, grid_area=grid_area, **kwargs)
+        elif type.lower() in ['progress', 'progressbar']:
+            new_widget = ProgressBar(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('progressbar')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
@@ -685,19 +685,25 @@ class StdOutBox(Widget):
         pass
 
 
-class Progressbar(easy_gui.Widget):
-    def __init__(self, master=None, length = 100, mode = 'determinate', **kwargs) -> None:
+class ProgressBar(Widget):
+    def __init__(self, master=None, orient: str='horizontal', mode='determinate', length=100, **kwargs) -> None:
+        '''mode arg can be "determinate" or "indeterminate" '''
         super().__init__(master=master, **kwargs)
         self.length = length
         del kwargs['grid_area']
-        self._widget = ttk.Progressbar(master=master, length=length, mode='determinate', **kwargs)
-
+        self._widget = ttk.Progressbar(master, orient=orient, mode=mode, length=length, **kwargs)
         self._widget['value'] = 0
 
-        def _progress_handler(w,length):
-            w['value'] += 1
-            w['value'] %= length
-        self.progress_handler = lambda: _progress_handler(self._widget, length)
+    def set(self, value: float=0):
+        self._widget['value'] = value
+
+    def get(self):
+        return self._widget['value']
+
+    def progress_handler(self, *args):
+        self._widget['value'] += 1
+        if self._widget['value'] > self.length:
+            self._widget['value'] %= self.length
 
 
 class ScrolledText(Widget):
@@ -722,19 +728,6 @@ class Tabs(Widget):
         Shortcut/convenience binding method.
         '''
         self.bind_event('<<NotebookTabChanged>>', command_func, separate_thread=separate_thread)
-
-
-class ProgressBar(Widget):
-    def __init__(self, master=None, orient: str='horizontal', mode='determinate', **kwargs) -> None:
-        '''mode arg can be "determinate" or "indeterminate" '''
-        super().__init__(master=master, **kwargs)
-        self.progress = ttk.DoubleVar()
-        del kwargs['grid_area']
-        self._widget = ttk.Progressbar(master, orient=orient, mode=mode, **kwargs)
-
-    def set(self, value: float=0):
-        # self._widget['value'] = value
-        self.progress = value
 
 
 class DatePicker(Widget):
