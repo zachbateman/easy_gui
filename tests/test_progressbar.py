@@ -11,7 +11,7 @@ class GUI(easy_gui.EasyGUI):
         s = self.add_section('test_section')
         s.add_widget(type='button', text='Button1', command_func=self.update_progress, separate_thread=True)
         s.add_widget(type='label', text='Click the button for a progress bar!')
-        self.progressbar = s.add_widget(type='progressbar', return_widget=True)
+        self.progressbar = s.add_widget(type='progressbar')
 
     def update_progress(self, *args):
         for _ in range(100):

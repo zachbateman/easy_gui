@@ -8,8 +8,8 @@ import easy_gui
 class TestGUI(easy_gui.EasyGUI):
     def __init__(self):
         self.geometry('800x500')
-        section = self.add_section('test_section', return_section=True)
-        scrldtext = section.add_widget(type='scrolledtext', return_widget=True)
+        section = self.add_section('test_section')
+        scrldtext = section.add_widget(type='scrolledtext')
         section.add_widget(type='button', text='Print Text', command_func=lambda e: print(scrldtext.get()))
 
 

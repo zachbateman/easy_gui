@@ -110,8 +110,8 @@ class EasyGUI(tk.Tk, GridMaster):
             section.create_section()
         self.mainloop()
 
-    def add_section(self, name='', title=False, return_section=True, grid_area=None,
-                               borderwidth=None, relief=None) -> None:
+    def add_section(self, name='', title=False, grid_area=None,
+                               borderwidth=None, relief=None):
         '''
         Add a Section object to the root window.
         '''
@@ -127,8 +127,7 @@ class EasyGUI(tk.Tk, GridMaster):
         section = Section(parent=self, name=name, title=title, grid_area=grid_area,
                                     borderwidth=borderwidth, relief=relief)
         self.sections[name] = section
-        if return_section:
-            return section
+        return section
 
     def delete_section(self, section_name) -> None:
         '''
@@ -223,7 +222,7 @@ class Section(tk.Frame, GridMaster):
         else:
             self.pack()
 
-    def add_widget(self, type='label', text='', widget_name=None, grid_area=None, return_widget=False, **kwargs):
+    def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **kwargs):
         '''
         Add a Widget object to this section
         '''
@@ -268,8 +267,8 @@ class Section(tk.Frame, GridMaster):
             self.widgets[new_widget_name('progressbar')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
-        if return_widget:
-            return new_widget
+
+        return new_widget
 
     def delete_widget(self, widget_name) -> None:
         '''
@@ -291,7 +290,7 @@ class Section(tk.Frame, GridMaster):
 
     def _clear_and_recreate_plot(self, mpl_figure, widget_name, grid_area, kwargs):
         self.delete_widget(widget_name)
-        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, grid_area=grid_area, return_widget=True)
+        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, grid_area=grid_area)
         new_widget.draw_plot(mpl_figure=mpl_figure)
         new_widget.position()  # have to reposition/create Widget
 

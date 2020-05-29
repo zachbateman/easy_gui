@@ -19,7 +19,7 @@ class GUI(easy_gui.EasyGUI):
         ax = figure.add_subplot(111)
         ax.semilogy([t[0] for t in data], [t[1] for t in data])
         display = self.add_section('display')
-        mplotlib = display.add_widget(type='matplotlib', return_widget=True)
+        mplotlib = display.add_widget(type='matplotlib')
         mplotlib.draw_plot(mpl_figure=figure)
 
         other_controls = self.add_section('other_controls')
@@ -31,7 +31,7 @@ class GUI(easy_gui.EasyGUI):
         ax2.semilogy([t[1] for t in data], [t[0] for t in data])
 
         s2 = self.add_section('display2')
-        mplotlib2 = s2.add_widget(type='matplotlib', return_widget=True)
+        mplotlib2 = s2.add_widget(type='matplotlib')
         mplotlib2.draw_plot(mpl_figure=figure2)
 
 

@@ -42,9 +42,9 @@ easy_gui is a high-level Python library designed to simplify the process of crea
                                   'run_button      run_button      output'])
           section.add_widget(type='label', text='Animal Diet Generator!', grid_area='title')
           section.add_widget(type='label', text='Animal:', grid_area='label1')
-          self.animal = section.add_widget(type='entry', grid_area='entry1', return_widget=True)
+          self.animal = section.add_widget(type='entry', grid_area='entry1')
           section.add_widget(type='label', text='Food:', grid_area='label2')
-          self.food = section.add_widget(type='entry', grid_area='entry2', return_widget=True)
+          self.food = section.add_widget(type='entry', grid_area='entry2')
           section.add_widget(type='stdout', grid_area='output')
           section.add_widget(type='button', text='Generate Diet!', grid_area='run_button', command_func=self.diet)
 
