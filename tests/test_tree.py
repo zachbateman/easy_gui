@@ -14,7 +14,7 @@ class TestGUI(easy_gui.EasyGUI):
         self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
 
         tree_section = self.add_section('tree_section', title=True)
-        tree = tree_section.add_widget(type='tree', return_widget=True)
+        tree = tree_section.add_widget(type='tree')
 
         tree.insert_column('TestCol1')
         tree.insert_column('TestCol2')
