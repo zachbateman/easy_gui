@@ -424,26 +424,6 @@ class MatplotlibPlot(Widget):
         return f'MatplotlibPlot Widget: {self.widget_name} which belongs to: {self.section}'
 
 
-class StdOutBox(Widget):
-    def __init__(self, master=None, height: int=10, width: int=30, **kwargs) -> None:
-        super().__init__(master=master, **kwargs)
-        del kwargs['grid_area']
-        self._widget = tk.Text(master, wrap='word', height=height, width=width, **kwargs)
-        sys.stdout = self
-
-    def write(self, s):
-        '''Write printed text to text box on a new line'''
-        self._widget.insert(tk.END, s)
-        self._widget.see(tk.END)
-
-    def flush(self):
-        '''
-        Method must be implemented for stdout replacement.
-        Makes self a "file-like object."
-        '''
-        pass
-
-
 class ProgressBar(Widget):
     def __init__(self, master=None, orient: str='horizontal', mode='determinate', length=100, **kwargs) -> None:
         '''mode arg can be "determinate" or "indeterminate" '''
@@ -474,6 +454,26 @@ class ScrolledText(Widget):
     def get(self) -> List[str]:
         '''Return the lines of text in this widget'''
         return list(self._widget.get(1.0, tk.END).split('\n'))
+
+
+class StdOutBox(Widget):
+    def __init__(self, master=None, height: int=10, width: int=30, **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        del kwargs['grid_area']
+        self._widget = tk.Text(master, wrap='word', height=height, width=width, **kwargs)
+        sys.stdout = self
+
+    def write(self, s):
+        '''Write printed text to text box on a new line'''
+        self._widget.insert(tk.END, s)
+        self._widget.see(tk.END)
+
+    def flush(self):
+        '''
+        Method must be implemented for stdout replacement.
+        Makes self a "file-like object."
+        '''
+        pass
 
 
 class Tabs(Widget):

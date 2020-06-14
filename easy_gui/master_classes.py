@@ -71,15 +71,15 @@ class GridMaster():
 
     def grid_limits(self) -> dict:
         min_row, max_row, min_col, max_col = 500, -500, 500, -500  # arbitrarly large starting points so no risk of surpising row/col not being captured
-        for name, areas in self.grid_areas.items():
+        for area in self.grid_areas.values():
             if areas['first_row'] < min_row:
-                min_row = areas['first_row']
+                min_row = area['first_row']
             if areas['last_row'] > max_row:
-                max_row = areas['last_row']
+                max_row = area['last_row']
             if areas['first_column'] < min_col:
-                min_col = areas['first_column']
+                min_col = area['first_column']
             if areas['last_column'] > max_col:
-                max_col = areas['last_column']
+                max_col = area['last_column']
         return {'min_row': min_row, 'max_row': max_row, 'min_col': min_col, 'max_col': max_col}
 
 
@@ -243,7 +243,7 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         positioning all children (Sections and/or Widgets).
         '''
         self.position(force_pack)
-        for name, child in {**self.widgets, **self.sections}.items():
+        for child in {**self.widgets, **self.sections}.values():
             try:
                 child.create(force_pack)  # if child is another Section object
             except AttributeError:
@@ -312,10 +312,6 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         Estimate and return height desired by this Section.
         '''
         return float(sum(widget.height for widget in self.widgets.values()))
-
-
-
-
 
 
 
