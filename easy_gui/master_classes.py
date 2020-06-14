@@ -56,8 +56,46 @@ class GridMaster():
                                 'first_column': first_column, 'last_column': last_column}
 
 
+class SectionMaster():
+    def __init__(self):
+        self.sections: dict = {}
 
-class EasyGUI(tk.Tk, GridMaster):
+    def add_section(self, name='', title=False, grid_area=None,
+                               borderwidth=None, relief=None):
+        '''
+        Add a Section object to the parent (root window or other Section).
+        '''
+        if name == '':
+            name = f'section{len(self.sections) + 1}'
+        if name in self.sections:
+            raise ValueError('Unable to add section as a section with the given name already exists!')
+
+        if borderwidth is None:
+            borderwidth = self.style.borderwidth
+        if relief is None:
+            relief = self.style.section_border
+        section = Section(parent=self, name=name, title=title, grid_area=grid_area,
+                                    borderwidth=borderwidth, relief=relief)
+        self.sections[name] = section
+        return section
+
+    def delete_section(self, section_name) -> None:
+        '''
+        Fully delete a section and all of its child widgets.
+        Pass without issue if the section doesn't exist.
+        '''
+        try:
+            for key, widget in self.sections[section_name].widgets.items():
+                widget._widget.destroy()
+            self.sections[section_name].destroy()
+            del self.sections[section_name]
+        except:
+            pass
+
+
+
+
+class EasyGUI(tk.Tk, GridMaster, SectionMaster):
     '''
     Main class to be subclassed for full GUI window.
     '''
@@ -66,6 +104,7 @@ class EasyGUI(tk.Tk, GridMaster):
     def __init__(self) -> None:
         super().__init__()
         GridMaster.__init__(self)
+        SectionMaster.__init__(self)
         EasyGUI.style.create_font()  # have to generate font.Font object after initial tk root window is created
 
         self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
@@ -73,7 +112,7 @@ class EasyGUI(tk.Tk, GridMaster):
         self.geometry("200x100")
         self.configure(background=self.style.window_color)
 
-        self.sections: dict = {}
+        # self.sections: dict = {}
 
     def __init_subclass__(cls, **kwargs):
         '''
@@ -110,38 +149,6 @@ class EasyGUI(tk.Tk, GridMaster):
             section.create_section()
         self.mainloop()
 
-    def add_section(self, name='', title=False, grid_area=None,
-                               borderwidth=None, relief=None):
-        '''
-        Add a Section object to the root window.
-        '''
-        if name == '':
-            name = f'section{len(self.sections) + 1}'
-        if name in self.sections:
-            raise ValueError('Unable to add section as a section with the given name already exists!')
-
-        if borderwidth is None:
-            borderwidth = self.style.borderwidth
-        if relief is None:
-            relief = self.style.section_border
-        section = Section(parent=self, name=name, title=title, grid_area=grid_area,
-                                    borderwidth=borderwidth, relief=relief)
-        self.sections[name] = section
-        return section
-
-    def delete_section(self, section_name) -> None:
-        '''
-        Fully delete a section and all of its child widgets.
-        Pass without issue if the section doesn't exist.
-        '''
-        try:
-            for key, widget in self.sections[section_name].widgets.items():
-                widget._widget.destroy()
-            self.sections[section_name].destroy()
-            del self.sections[section_name]
-        except:
-            pass
-
     def add_menu(self,
                  commands={'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
                  cascades={'Options': {'Option 1': lambda: print('Option 1'), 'Option 2': lambda: print('Option 2')}}) -> None:
@@ -167,7 +174,7 @@ class EasyGUI(tk.Tk, GridMaster):
 
 
 
-class Section(tk.Frame, GridMaster):
+class Section(tk.Frame, GridMaster, SectionMaster):
     '''
     A Section is a tk.Frame used for storing and managing widgets.
     '''
@@ -181,6 +188,7 @@ class Section(tk.Frame, GridMaster):
                          borderwidth=borderwidth,
                          relief=relief)
         GridMaster.__init__(self)
+        SectionMaster.__init__(self)
         self.parent = parent
         self.name = name
         self.grid_area = grid_area
@@ -190,6 +198,10 @@ class Section(tk.Frame, GridMaster):
                 self.add_widget(type='label', text=title)
             elif title == True:  # if True, use the name as the label text
                 self.add_widget(type='label', text=name)
+
+    @property
+    def style(self):
+        return self.parent.style
 
     def create_section(self, force_pack: bool=False):
         '''
