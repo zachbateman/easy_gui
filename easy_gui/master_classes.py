@@ -18,6 +18,7 @@ from typing import List, Dict
 class GridMaster():
     def __init__(self):
         self.grid_areas = {}
+        self.grid_configuration = []
 
     def configure_grid(self, grid_configuration: List[str]) -> Dict[str, int]:
         '''
@@ -52,6 +53,37 @@ class GridMaster():
             self.grid_areas[name] = {'first_row': first_row, 'last_row': last_row,
                                 'first_column': first_column, 'last_column': last_column}
 
+        # Now make elements expand evenly with window resize by default
+        if self.grid_areas != {}:
+            limits = self.grid_limits()
+            for row in range(limits['min_row'], limits['max_row'] + 1):
+                self.grid_rowconfigure(row, weight=1)
+            for col in range(limits['min_col'], limits['max_col'] + 1):
+                self.grid_columnconfigure(col, weight=1)
+
+    def add_grid_row(self, row_name: str):
+        if self.grid_configuration == []:
+            self.grid_configuration = [row_name]
+        else:
+            num_columns = len(self.grid_configuration[0].split(' '))
+            self.grid_configuration.append(' '.join([row_name] * num_columns))
+        self.configure_grid(self.grid_configuration)
+
+    def grid_limits(self) -> dict:
+        min_row, max_row, min_col, max_col = 500, -500, 500, -500  # arbitrarly large starting points so no risk of surpising row/col not being captured
+        for name, areas in self.grid_areas.items():
+            if areas['first_row'] < min_row:
+                min_row = areas['first_row']
+            if areas['last_row'] > max_row:
+                max_row = areas['last_row']
+            if areas['first_column'] < min_col:
+                min_col = areas['first_column']
+            if areas['last_column'] > max_col:
+                max_col = areas['last_column']
+        return {'min_row': min_row, 'max_row': max_row, 'min_col': min_col, 'max_col': max_col}
+
+
+
 
 class SectionMaster():
     def __init__(self):
@@ -71,6 +103,11 @@ class SectionMaster():
             borderwidth = self.style.borderwidth
         if relief is None:
             relief = self.style.section_border
+
+        # Next 2 lines set grid_area to be name if not explicitly declared and not already used as a grid_area
+        if grid_area is None and name not in [s.grid_area for s in self.sections.values()]:
+            grid_area = name
+
         section = Section(parent=self, name=name, title=title, grid_area=grid_area,
                                     borderwidth=borderwidth, relief=relief)
         self.sections[name] = section
@@ -109,8 +146,6 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         self.geometry("200x100")
         self.configure(background=self.style.window_color)
 
-        # self.sections: dict = {}
-
     def __init_subclass__(cls, **kwargs):
         '''
         Wraps user subclass __init__ to implicitly handle the EasyGUI.__init__ call along with
@@ -120,7 +155,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         def new_init(self, *args, **kwargs):
             EasyGUI.__init__(self)  # in place of super().__init__() in subclass __init__
             old_init(self, *args, **kwargs)
-            self.create_gui()  # populates GUI elements and runs tkinter mainloop
+            self.create()  # populates GUI elements and runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method
 
     def icon(self, bitmap, default: bool=False) -> None:
@@ -137,13 +172,13 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
             else:
                 print(f'Cannot locate {bitmap}!  If using PyInstaller, be sure to specify this file in "datas".')
 
-    def create_gui(self) -> None:
+    def create(self, force_pack=False) -> None:
         '''
         Positions GUI elements in window and starts tkinter main loop.
         CALL THIS at the end of creating the GUI to make it run.
         '''
         for name, section in self.sections.items():
-            section.create_section()
+            section.create(force_pack=force_pack)
         self.mainloop()
 
     def add_menu(self,
@@ -178,7 +213,8 @@ class Section(tk.Frame, GridMaster, SectionMaster):
     def __init__(self, parent=None, name='', title=False, grid_area=None, **kwargs) -> None:
         borderwidth = kwargs.get('borderwidth', 1)
         relief = kwargs.get('relief', 'ridge')
-        super().__init__(
+        master = None if parent is None else parent
+        super().__init__(master=master,
                          bg=EasyGUI.style.section_color,
                          padx=EasyGUI.style.frame_padx,
                          pady=EasyGUI.style.frame_pady,
@@ -201,15 +237,15 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         '''Goes upsteam to evenually reference EasyGUI.style'''
         return self.parent.style
 
-    def create_section(self, force_pack: bool=False):
+    def create(self, force_pack: bool=False):
         '''
         Positions this section within the parent along with
         positioning all children (Sections and/or Widgets).
         '''
-        self.position()
-        for name, child in self.widgets.items():
+        self.position(force_pack)
+        for name, child in {**self.widgets, **self.sections}.items():
             try:
-                child.create_section()  # if child is another Section object
+                child.create(force_pack)  # if child is another Section object
             except AttributeError:
                 child.position(force_pack)  # if child is a Widget object
 
@@ -217,20 +253,20 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         '''
         Physically position this Section within its parent container.
         '''
-        if self.grid_area and not force_pack:
-            try:
-                bounds = self.parent.grid_areas[self.grid_area]
+        try:
+            if self.parent.grid_areas != {} and self.grid_area and not force_pack:
                 try:
+                    bounds = self.parent.grid_areas[self.grid_area]
                     self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
-                except _tkinter.TclError:
-                    print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.'
-                           '\nUsing "pack" placement instead.')
-                    self.parent.create_section(force_pack=True)  # go back and fully recreate section forcing all children to be packed
-            except KeyError:
-                print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to pack.')
-                self.pack()
-        else:
-            self.pack()
+                    return  # early return if everything works fine with initial attempt (no other actions needed)
+                except KeyError:
+                    print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
+            self.parent.add_grid_row(self.name)
+            self.grid_area = self.name
+            self.parent.create()
+        except _tkinter.TclError:
+            print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.\nAdding to a new row instead.')
+            self.parent.create(force_pack=True)  # go back and fully recreate section forcing all children to be packed/in new rows
 
     def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **kwargs):
         '''

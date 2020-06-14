@@ -46,7 +46,7 @@ class Widget(tk.Frame):
                 except _tkinter.TclError:
                     print(f'\n--- GRID FAILED for Widget: "{self}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.'
                            '\nUsing "pack" placement instead.')
-                    self.parent.create_section(force_pack=True)  # go back and fully recreate section forcing all children to be packed
+                    self.parent.create(force_pack=True)  # go back and fully recreate section forcing all children to be packed
             except KeyError:
                 print(f'"{self.grid_area}" not found in "{self.parent.name}" Section grid areas.\nResorting to pack.')
                 self._widget.pack()
