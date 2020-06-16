@@ -24,7 +24,7 @@ class Widget(tk.Frame):
     Class assumes the "_widget" attribute is the actual tkinter widget (if used)
     '''
     def __init__(self, master=None, bg=None, grid_area=None, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__(master=master, **kwargs)
         self.parent = master  # master attr used in tkinter; parent attr used in this code
         self.grid_area = grid_area
         self.configure(background=self.style.widget_bg_color)
@@ -34,24 +34,26 @@ class Widget(tk.Frame):
         '''Goes upsteam to evenually reference EasyGUI.style'''
         return self.parent.style
 
-    def position(self, force_pack: bool=False) -> None:
+    def position(self, force_row: bool=False) -> None:
         '''
         Physically position this Widget within its parent Section.
         '''
-        if self.grid_area and not force_pack:
-            try:
-                bounds = self.parent.grid_areas[self.grid_area]
+        try:
+            if self.parent.grid_areas != {} and self.grid_area and not force_row:
                 try:
-                    self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
-                except _tkinter.TclError:
-                    print(f'\n--- GRID FAILED for Widget: "{self}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.'
-                           '\nUsing "pack" placement instead.')
-                    self.parent.create(force_pack=True)  # go back and fully recreate section forcing all children to be packed
-            except KeyError:
-                print(f'"{self.grid_area}" not found in "{self.parent.name}" Section grid areas.\nResorting to pack.')
-                self._widget.pack()
-        else:
-            self._widget.pack()
+                    bounds = self.parent.grid_areas[self.grid_area]
+                    self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
+                    return  # early return if everything works fine with initial attempt (no other actions needed)
+                except KeyError:
+                    print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
+            name = self.__class__.__name__
+            existing_grid_areas = [n for n in self.parent.grid_areas if name in n]
+            self.grid_area = name if name not in existing_grid_areas else next((name + str(i) for i in range(1, 100) if name + str(i) not in existing_grid_areas))
+            self.parent.add_grid_row(self.grid_area)
+            self.parent.create()
+        except _tkinter.TclError:
+            print(f'\n--- GRID FAILED for Widget: "{ self.__class__.__name__}" ---\nTry ensuring "grid_area" arg is given for all Widgets in a given parent.\nAdding to a new row instead.')
+            self.parent.create(force_row=True)  # go back and fully recreate section forcing all children to be packed/in new rows
 
     def bind_click(self, command_func, separate_thread: bool=False) -> None:
         '''
