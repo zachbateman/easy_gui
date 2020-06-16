@@ -14,6 +14,7 @@ class GUI(easy_gui.EasyGUI):
         self.progressbar = s.add_widget(type='progressbar')
 
     def update_progress(self, *args):
+        self.progressbar.set(0)
         for _ in range(100):
             time.sleep(0.01)
             self.progressbar.progress_handler()

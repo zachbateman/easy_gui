@@ -205,6 +205,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 class Section(tk.Frame, GridMaster, SectionMaster):
     '''
     A Section is a tk.Frame used for storing and managing widgets.
+    Sections exist as children of the root (EasyGUI) window or other Sections.
     '''
     def __init__(self, parent=None, name='', title=False, grid_area=None, **kwargs) -> None:
         borderwidth = kwargs.get('borderwidth', 1)
