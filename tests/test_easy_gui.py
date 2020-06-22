@@ -9,7 +9,11 @@ class GUI(easy_gui.EasyGUI):
     def __init__(self):
         self.add_section('test_section')
         self.sections['test_section'].add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
-        self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
+        self.test_lbl = self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
+        self.sections['test_section'].add_widget('btn', 'Update Label', command_func=self.update_lbl)
+
+    def update_lbl(self, *args):
+        self.test_lbl.set(self.test_lbl.get() + 'X')
 
 
 class TestEasyGUI(unittest.TestCase):

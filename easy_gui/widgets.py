@@ -185,9 +185,17 @@ class Label(Widget):
     def __init__(self, master=None, text='label', **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
+        self.strvar = tk.StringVar()
+        self.set(text)
         del kwargs['grid_area']
-        self._widget = tk.Label(master=master, text=text, bg=self.style.widget_bg_color, fg=self.style.text_color,
+        self._widget = tk.Label(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
                                 padx=self.style.label_padx, pady=self.style.label_pady, font=self.style.font, **kwargs)
+
+    def get(self):
+        return self.strvar.get()
+
+    def set(self, value):
+        self.strvar.set(value)
 
     @property
     def width(self) -> float:
