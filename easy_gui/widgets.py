@@ -486,17 +486,14 @@ class StdOutBox(Widget):
         pass
 
 
-class Tabs(Widget):
-    def __init__(self, master=None, height: int=30, width: int=50, **kwargs) -> None:
+class LabelEntry(Widget):
+    '''
+    Widget combining a Label and and Entry in one (common use case).
+    '''
+    def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
-        del kwargs['grid_area']
-        self._widget = ttk.Notebook(master, height=height, width=width, **kwargs)
 
-    def bind_change(self, command_func, separate_thread: bool=False):
-        '''
-        Shortcut/convenience binding method.
-        '''
-        self.bind_event('<<NotebookTabChanged>>', command_func, separate_thread=separate_thread)
+        # TODO: Make this widget...
 
 
 class DatePicker(Widget):

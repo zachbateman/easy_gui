@@ -90,7 +90,7 @@ class SectionMaster():
         self.sections: dict = {}
 
     def add_section(self, name='', title=False, grid_area=None,
-                               borderwidth=None, relief=None):
+                               borderwidth=None, relief=None, tabbed: bool=False):
         '''
         Add a Section object to the parent (root window or other Section).
         '''
@@ -109,8 +109,17 @@ class SectionMaster():
             grid_area = name
 
         section = Section(parent=self, name=name, title=title, grid_area=grid_area,
-                                    borderwidth=borderwidth, relief=relief)
+                                    borderwidth=borderwidth, relief=relief, tabbed=tabbed)
         self.sections[name] = section
+        return section
+
+    def add_tab(self, name=''):
+        if not self.tabbed:
+            print('Error!  Cannot .add_tab to a Section unless tabbed=True when it is created.')
+            return
+        section = Section(parent=self.tabs, name=name)
+        self.sections[name] = section
+        self.tabs.add(section, text=name)
         return section
 
     def delete_section(self, section_name) -> None:
@@ -207,11 +216,11 @@ class Section(tk.Frame, GridMaster, SectionMaster):
     A Section is a tk.Frame used for storing and managing widgets.
     Sections exist as children of the root (EasyGUI) window or other Sections.
     '''
-    def __init__(self, parent=None, name='', title=False, grid_area=None, **kwargs) -> None:
+    def __init__(self, parent=None, name='', title=False, grid_area=None, tabbed: bool=False, **kwargs) -> None:
         borderwidth = kwargs.get('borderwidth', 1)
         relief = kwargs.get('relief', 'ridge')
-        master = None if parent is None else parent
-        super().__init__(master=master,
+        self.tabbed = tabbed
+        super().__init__(master=parent,
                          bg=EasyGUI.style.section_color,
                          padx=EasyGUI.style.frame_padx,
                          pady=EasyGUI.style.frame_pady,
@@ -222,6 +231,9 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         self.parent = parent
         self.name = name
         self.grid_area = grid_area
+        if tabbed:
+            self.tabs = ttk.Notebook(self)
+            self.tabs.style = self.style
         self.widgets: dict = {}
         if title:  # title kwargs can be provided as True or a string
             if isinstance(title, str):  # if string, use title for label text
@@ -251,17 +263,23 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         Physically position this Section within its parent container.
         '''
         try:
-            if self.parent.grid_areas != {} and self.grid_area and not force_row:
-                try:
-                    bounds = self.parent.grid_areas[self.grid_area]
-                    self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
-                    return  # early return if everything works fine with initial attempt (no other actions needed)
-                except KeyError:
-                    if self.grid_area != self.name:  # basically, if user-specified grid_area (are same if programatically set grid_area)
-                        print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
-            self.parent.add_grid_row(self.name)
-            self.grid_area = self.name
-            self.parent.create()
+            if hasattr(self.parent, 'grid_areas'):
+                if self.parent.grid_areas != {} and self.grid_area and not force_row:
+                    try:
+                        if not hasattr(self.parent, 'tabbed') or not self.parent.tabbed:
+                            bounds = self.parent.grid_areas[self.grid_area]
+                            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
+                        else:
+                            self.pack()
+                        if self.tabbed:
+                            self.tabs.pack()
+                        return  # early return if everything works fine with initial attempt (no other actions needed)
+                    except KeyError:
+                        if self.grid_area != self.name:  # basically, if user-specified grid_area (are same if programatically set grid_area)
+                            print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
+                self.parent.add_grid_row(self.name)
+                self.grid_area = self.name
+                self.parent.create()
         except _tkinter.TclError:
             print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.\nAdding to a new row instead.')
             self.parent.create(force_row=True)  # go back and fully recreate section forcing all children to be packed/in new rows
