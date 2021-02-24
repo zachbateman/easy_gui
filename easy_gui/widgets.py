@@ -35,6 +35,11 @@ class Widget(tk.Frame):
         '''Goes upsteam to evenually reference EasyGUI.style'''
         return self.parent.style
 
+    @property
+    def root(self):
+        '''Goes upsteam to evenually reference EasyGUI as root'''
+        return self.parent.root
+
     def position(self, force_row: bool=False) -> None:
         '''
         Physically position this Widget within its parent Section.
@@ -294,6 +299,9 @@ class Tree(Widget):
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
         self.scrollbar = ttk.Scrollbar(master, orient='vertical')
 
+        self.root.bind('<Up>', self.up_arrow)
+        self.root.bind('<Down>', self.down_arrow)
+
     @property
     def current_row(self) -> dict:
         return self._widget.item(self._widget.focus())
@@ -376,18 +384,15 @@ class Tree(Widget):
         current_row_iid_index = next(index for index, iid in enumerate(iids) if iid == current_row)
 
         if up_or_down == 'up':
-            if current_row == iids[0]:
-                new_iid = current_row
-            else:
+            if current_row > iids[0]:
                 new_iid = iids[current_row_iid_index - 1]
+                self._widget.selection_set(new_iid)
+                self._widget.focus(new_iid)
         elif up_or_down == 'down':
-            if current_row == iids[-1]:
-                new_iid = current_row
-            else:
+            if current_row < iids[-1]:
                 new_iid = iids[current_row_iid_index + 1]
-
-        self._widget.item(new_iid, tags='selected')
-        self._widget.focus(new_iid)
+                self._widget.selection_set(new_iid)
+                self._widget.focus(new_iid)
 
     def up_arrow(self, a) -> None:
         '''

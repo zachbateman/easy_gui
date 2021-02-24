@@ -168,6 +168,11 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
             self.mainloop()  # runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method
 
+    @property
+    def root(self):
+        '''Used by downstream elements to reference EasyGUI as root'''
+        return self
+
     def icon(self, bitmap, default: bool=False) -> None:
         '''
         Alternate method to call tk.Tk iconbitmap method using altered path handling
@@ -245,6 +250,11 @@ class Section(tk.Frame, GridMaster, SectionMaster):
     def style(self):
         '''Goes upsteam to evenually reference EasyGUI.style'''
         return self.parent.style
+
+    @property
+    def root(self):
+        '''Goes upsteam to evenually reference EasyGUI as root'''
+        return self.parent.root
 
     def create(self, force_row: bool=False):
         '''
