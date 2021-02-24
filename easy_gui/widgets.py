@@ -14,6 +14,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+from contextlib import nullcontext
 
 
 
@@ -109,37 +110,38 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
             else:
                 return f'{len(self.widgets) + 1}' + '_' + w_type
 
-        if type.lower() in ['label', 'lbl']:
+        type_lower = type.lower()
+        if type_lower in ['label', 'lbl']:
             new_widget = Label(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('label')] = new_widget
-        elif type.lower() in ['button', 'btn']:
+        elif type_lower in ['button', 'btn']:
             new_widget = Button(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('button')] = new_widget
-        elif type.lower() == 'entry':
+        elif type_lower == 'entry':
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
-        elif type.lower() in ['checkbox', 'checkbutton']:
+        elif type_lower in ['checkbox', 'checkbutton']:
             new_widget = CheckBox(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('checkbox')] = new_widget
-        elif type.lower() == 'dropdown':
+        elif type_lower == 'dropdown':
             new_widget = DropDown(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('dropdown')] = new_widget
-        elif type.lower() == 'listbox':
+        elif type_lower == 'listbox':
             new_widget = ListBox(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('listbox')] = new_widget
-        elif type.lower() == 'tree':
+        elif type_lower == 'tree':
             new_widget = Tree(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('tree')] = new_widget
-        elif type.lower() == 'matplotlib':
+        elif type_lower == 'matplotlib':
             new_widget = MatplotlibPlot(master=self, section=self, widget_name=new_widget_name('matplotlibplot'), grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('matplotlibplot')] = new_widget
-        elif type.lower() == 'stdout':
+        elif type_lower == 'stdout':
             new_widget = StdOutBox(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('stdout')] = new_widget
-        elif type.lower() == 'scrolledtext':
+        elif type_lower == 'scrolledtext':
             new_widget = ScrolledText(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('scrolledtext')] = new_widget
-        elif type.lower() in ['progress', 'progressbar']:
+        elif type_lower in ['progress', 'progressbar']:
             new_widget = ProgressBar(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('progressbar')] = new_widget
         else:
@@ -292,6 +294,9 @@ class Tree(Widget):
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
         self.scrollbar = ttk.Scrollbar(master, orient='vertical')
 
+    @property
+    def current_row(self) -> dict:
+        return self._widget.item(self._widget.focus())
 
     def insert_column(self, column_name, width=120, minwidth=40, stretch=tk.YES) -> None:
         '''
@@ -421,9 +426,14 @@ class MatplotlibPlot(Widget):
             self.section._clear_and_recreate_plot(mpl_figure, self.widget_name, self.grid_area, self.kwargs)
         else:
             self.plot_drawn = True
-            self.mpl_figure = mpl_figure
-            self.fig_canvas = FigureCanvasTkAgg(self.mpl_figure, self._widget)
-            self.toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
+            self.fig_canvas = FigureCanvasTkAgg(mpl_figure, self._widget)
+            toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
+            # NOW TO MINIMIZE CRAZY FLICKERING/REDRAWING......
+            # The next line overwrites and ignores the ._wait_cursor_for_draw_cm method
+            # which is a context manager call in matplotlib.backends.backend_agg.FigureCanvasAgg.draw (line ~390).
+            # This context manager appears to only attempt to change the cursor to a "wait" cursor... but I don't see it actually doing that,
+            # and it's slow and therefore making the plot redraw take way too long and look ridiculous.
+            toolbar._wait_cursor_for_draw_cm = lambda: nullcontext()
             self.fig_canvas.get_tk_widget().pack(expand=True)
 
             # Check if provided figure is wide enough to prevent unstable width changing on mouseover...

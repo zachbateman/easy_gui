@@ -309,11 +309,17 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         for w_name in list(self.widgets.keys()):
             self.delete_widget(w_name)
 
+
     def _clear_and_recreate_plot(self, mpl_figure, widget_name, grid_area, kwargs):
-        self.delete_widget(widget_name)
+        old_widget = self.widgets[widget_name]  # grab reference to widget to be deleted so that it's place in dict can be given to new widget
+
         new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, grid_area=grid_area)
+        new_widget.position()
         new_widget.draw_plot(mpl_figure=mpl_figure)
         new_widget.position()  # have to reposition/create Widget
+
+        old_widget.destroy()  # destroy after new widget is positioned for slightly less flickering
+
 
     @property
     def width(self) -> float:
