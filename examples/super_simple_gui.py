@@ -6,8 +6,7 @@ import easy_gui
   
 class GUI(easy_gui.EasyGUI):
     def __init__(self):
-        section = self.add_section('example')
-        section.add_widget(type='label', text='Example Label')
-        section.add_widget(type='button', text='Button', command_func=lambda x: print('TEST'))
+        self.add_widget(type='label', text='Example Label')
+        self.add_widget(type='button', text='Button', command_func=lambda x: print('TEST'))
   
 application = GUI()

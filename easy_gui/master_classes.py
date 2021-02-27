@@ -222,6 +222,14 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 
         self.config(menu=self.menu)
 
+    def add_widget(self, *args, **kwargs):
+        '''
+        Same as Section.add_widget, but works if used on main GUI class without specifying a Section.
+        A Section named "_default" is created if needed and widgets are put within that section.
+        '''
+        if '_default' not in self.sections:
+            self.add_section('_default')
+        self.sections['_default'].add_widget(*args, **kwargs)
 
 
 class Section(tk.Frame, GridMaster, SectionMaster):

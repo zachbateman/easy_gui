@@ -22,9 +22,9 @@ class GUI(easy_gui.EasyGUI):  # Our application class inherits easy_gui.EasyGUI
         section.add_widget(type='label', text='Animal Diet Generator!', grid_area='title')
         section.add_widget(type='label', text='Animal:', grid_area='label1')
         # Widgets can be stored as an attribute by specifying return_widget=True
-        self.animal = section.add_widget(type='entry', grid_area='entry1', return_widget=True)
+        self.animal = section.add_widget(type='entry', grid_area='entry1')
         section.add_widget(type='label', text='Food:', grid_area='label2')
-        self.food = section.add_widget(type='entry', grid_area='entry2', return_widget=True)
+        self.food = section.add_widget(type='entry', grid_area='entry2')
         section.add_widget(type='stdout', grid_area='output')
         # A button can be assigned a function/method with the "command_func" kwarg
         section.add_widget(type='button', text='Generate Diet!', grid_area='run_button', command_func=self.diet)
