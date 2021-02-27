@@ -9,6 +9,7 @@ class BaseStyle():
     Style class with most fundamental level of styling.
     '''
     def __init__(self) -> None:
+        self.transparent = False
         self.window_color = '#DDE5EE'
         self.section_color = '#DDE5EE'
         self.menu_color = 'lightgrey'
@@ -59,3 +60,14 @@ class DarkStyle(BaseStyle):
         self.section_color = '#555'
         self.text_color = '#FFF'
         self.widget_bg_color = self.section_color
+
+
+class TransparentStyle(BaseStyle):
+    '''
+    Style with a transparent window.
+    '''
+    def __init__(self) -> None:
+        super().__init__()
+        self.transparent = True
+        self.window_color = 'white'
+        self.section_color = 'white'

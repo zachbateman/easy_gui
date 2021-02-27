@@ -144,7 +144,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
     '''
     style = BaseStyle()
 
-    def __init__(self) -> None:
+    def __init__(self, alpha: float=1.0, topmost: bool=False, disable_interaction: bool=False, toolwindow: bool=False, fullscreen: bool=False, overrideredirect: bool=False) -> None:
         super().__init__()
         GridMaster.__init__(self)
         SectionMaster.__init__(self)
@@ -153,7 +153,20 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
         self.title('EasyGUI')
         self.geometry("200x100")
+        self.transparent = False
         self.configure(background=self.style.window_color)
+
+        if self.style.transparent:
+            self.wm_attributes('-transparentcolor', 'white')  # turn off window shadow
+
+        # See documention of below WINDOWS options here: https://wiki.tcl-lang.org/page/wm+attributes
+        self.wm_attributes('-alpha', alpha)
+        self.wm_attributes('-fullscreen', fullscreen)
+        self.wm_attributes('-disabled', disable_interaction)  # disables window interaction for click pass through
+        self.wm_attributes('-toolwindow', toolwindow)  # makes a window with a single close-button (which is smaller than usual) on the right of the title bar
+        self.wm_attributes('-topmost', topmost)  # make root window always on top
+        self.overrideredirect(overrideredirect)  # hide root window drag bar and close button
+
 
     def __init_subclass__(cls, **kwargs):
         '''
@@ -162,8 +175,11 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         '''
         old_init = cls.__init__  # reference to original subclass method so new_init isn't recursive
         def new_init(self, *args, **kwargs):
-            EasyGUI.__init__(self)  # in place of super().__init__() in subclass __init__
-            old_init(self, *args, **kwargs)
+            EasyGUI.__init__(self, **kwargs)  # in place of super().__init__() in subclass __init__
+            try:
+                old_init(self, *args, **kwargs)
+            except TypeError:
+                print('\nAre you passing in kwargs to GUI creation?\nIf so, remember to put a "**kwargs" in the __init__ function!')
             self.create()  # populates GUI elements
             self.mainloop()  # runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method
@@ -229,7 +245,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         '''
         if '_default' not in self.sections:
             self.add_section('_default')
-        self.sections['_default'].add_widget(*args, **kwargs)
+        return self.sections['_default'].add_widget(*args, **kwargs)
 
 
 class Section(tk.Frame, GridMaster, SectionMaster):
