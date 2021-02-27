@@ -13,7 +13,8 @@ class GridNoErrors(easy_gui.EasyGUI):
         self.sections['controls'].configure_grid(['b1', '.', 'b2'])
 
         self.sections['controls'].add_widget(type='button', text='B1', grid_area='b1', command_func=lambda e: print('Button1 working!'))
-        self.sections['controls'].add_widget(type='button', text='B2', grid_area='b2', command_func=lambda e: print('Button2 working!'))
+        # self.sections['controls'].add_widget(type='button', text='B2', grid_area='b2', command_func=lambda e: self.root.destroy())
+        self.sections['controls'].add_widget(type='button', text='B2 (click to close)', grid_area='b2', command_func=lambda e: self.root.close())
 
         self.add_section('other_controls', grid_area='section2')
         self.sections['other_controls'].add_widget(type='label', text='Other controls:')

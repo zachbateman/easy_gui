@@ -173,6 +173,14 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         '''Used by downstream elements to reference EasyGUI as root'''
         return self
 
+    def close(self):
+        '''
+        Alias for self.destroy.
+        Can be used by any GUI element to close the window via "self.root.close()"
+        since self.root will travel upstream until it hits EasyGUI.close().
+        '''
+        self.destroy()
+
     def icon(self, bitmap, default: bool=False) -> None:
         '''
         Alternate method to call tk.Tk iconbitmap method using altered path handling
@@ -239,6 +247,7 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         if tabbed:
             self.tabs = ttk.Notebook(self)
             self.tabs.style = self.style
+            self.tabs.root = self.root
         self.widgets: dict = {}
         if title:  # title kwargs can be provided as True or a string
             if isinstance(title, str):  # if string, use title for label text
