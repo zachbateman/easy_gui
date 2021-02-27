@@ -150,6 +150,9 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         SectionMaster.__init__(self)
         EasyGUI.style.create_font()  # have to generate font.Font object after initial tk root window is created
 
+        self.key_log = []  # record keys/buttons triggered
+        self.key_triggers = [('closegui', lambda: self.close())]
+
         self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
         self.title('EasyGUI')
         self.geometry("200x100")
@@ -181,6 +184,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
             except TypeError:
                 print('\nAre you passing in kwargs to GUI creation?\nIf so, remember to put a "**kwargs" in the __init__ function!')
             self.create()  # populates GUI elements
+            self.bind_all('<Key>', self.log_keys)
             self.mainloop()  # runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method
 
@@ -188,6 +192,25 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
     def root(self):
         '''Used by downstream elements to reference EasyGUI as root'''
         return self
+
+    def log_keys(self, event):
+        self.key_log.append(event.char)
+        self.key_log = self.key_log[-100:]
+        self.check_key_triggers()
+
+    def check_key_triggers(self):
+        key_str = ''.join(self.key_log)
+        triggered = False
+        for trigger, action in self.key_triggers:
+            if trigger in key_str:
+                action()
+                triggered = True
+                break
+        if triggered:
+            self.key_log = []
+
+    def add_key_trigger(self, trigger, func):
+        self.key_triggers.append((trigger, func))
 
     def close(self):
         '''
