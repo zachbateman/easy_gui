@@ -10,6 +10,7 @@ from .styles import BaseStyle
 from . import widgets
 import os
 import sys
+import threading
 from typing import List, Dict
 
 
@@ -144,7 +145,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
     '''
     style = BaseStyle()
 
-    def __init__(self, alpha: float=1.0, topmost: bool=False, disable_interaction: bool=False, toolwindow: bool=False, fullscreen: bool=False, overrideredirect: bool=False) -> None:
+    def __init__(self, alpha: float=1.0, topmost: bool=False, disable_interaction: bool=False, toolwindow: bool=False, fullscreen: bool=False, overrideredirect: bool=False, **kwargs) -> None:
         super().__init__()
         GridMaster.__init__(self)
         SectionMaster.__init__(self)
@@ -155,7 +156,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 
         self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
         self.title('EasyGUI')
-        self.geometry("200x100")
+        self.geometry("300x180+200+200")  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
         self.transparent = False
         self.configure(background=self.style.window_color)
 
@@ -194,11 +195,20 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         return self
 
     def log_keys(self, event):
+        '''
+        Record key presses up to a maximum of 100 characters.
+        Also check to see if any triggers are met and execute as needed.
+        '''
         self.key_log.append(event.char)
         self.key_log = self.key_log[-100:]
         self.check_key_triggers()
 
     def check_key_triggers(self):
+        '''
+        Check if a key trigger has been met,
+        run function if so, and clear out key log.
+        (so next key doesn't trigger same result)
+        '''
         key_str = ''.join(self.key_log)
         triggered = False
         for trigger, action in self.key_triggers:
@@ -209,8 +219,17 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         if triggered:
             self.key_log = []
 
-    def add_key_trigger(self, trigger, func):
-        self.key_triggers.append((trigger, func))
+    def add_key_trigger(self, trigger, func, separate_thread: bool=False):
+        '''
+        Bind a function to a sequence of key presses.
+        Can specify as separate_thread=True for long-running functions.
+        '''
+        if separate_thread:
+            def threaded_func(*args):
+                threading.Thread(target=func).start()
+            self.key_triggers.append((trigger, threaded_func))
+        else:
+            self.key_triggers.append((trigger, func))
 
     def close(self):
         '''
