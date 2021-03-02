@@ -48,7 +48,12 @@ class Widget(tk.Frame):
             if self.parent.grid_areas != {} and self.grid_area and not force_row:
                 try:
                     bounds = self.parent.grid_areas[self.grid_area]
-                    self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
+                    if isinstance(self, Tree):
+                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW
+                        self._widget.pack(side='left')
+                        self.scrollbar.pack(side='right', fill='y')
+                    else:
+                        self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                     return  # early return if everything works fine with initial attempt (no other actions needed)
                 except KeyError:
                     print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
@@ -69,9 +74,9 @@ class Widget(tk.Frame):
         if separate_thread:
             def threaded_command_func(*args):
                 threading.Thread(target=command_func).start()
-            self._widget.bind('<Button-1>', threaded_command_func)
+            self._widget.bind('<Button-1>', threaded_command_func, add='+')
         else:
-            self._widget.bind('<Button-1>', command_func)
+            self._widget.bind('<Button-1>', command_func, add='+')
 
     def bind_event(self, event: str, command_func, separate_thread: bool=False) -> None:
         '''
@@ -81,9 +86,9 @@ class Widget(tk.Frame):
         if separate_thread:
             def threaded_command_func(*args):
                 threading.Thread(target=command_func).start()
-            self._widget.bind(event, threaded_command_func)
+            self._widget.bind(event, threaded_command_func, add='+')
         else:
-            self._widget.bind(event, command_func)
+            self._widget.bind(event, command_func, add='+')
 
     def destroy(self):
         self._widget.destroy()
@@ -294,13 +299,13 @@ class Tree(Widget):
         super().__init__(master=master, **kwargs)
 
         del kwargs['grid_area']
-        self._widget = ttk.Treeview(master, columns=(), style='Treeview', show='tree headings', height=30, **kwargs)
+        self._widget = ttk.Treeview(self, columns=(), style='Treeview', show='tree headings', height=30, **kwargs)
         self.tree_col_header = tree_col_header
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
-        self.scrollbar = ttk.Scrollbar(master, orient='vertical')
+        self.scrollbar = ttk.Scrollbar(self, orient='vertical')
+        self.scrollbar.configure(command=self._widget.yview)
+        self._widget.configure(yscrollcommand=self.scrollbar.set)
 
-        self.root.bind('<Up>', self.up_arrow)
-        self.root.bind('<Down>', self.down_arrow)
 
     @property
     def current_row(self) -> dict:
@@ -329,7 +334,7 @@ class Tree(Widget):
         for col in self.column_definitions[1:]:
             self._widget.heading(col['column_name'], text=col['column_name'], anchor=tk.W)
 
-    def insert_row(self, text, values=('',), parent_row=None, return_row=False, open=False):
+    def insert_row(self, text, values=('',), parent_row=None, open=False):
         '''
         Values arg must be provided as tuple of strings
         '''
@@ -337,8 +342,7 @@ class Tree(Widget):
             new_row = self._widget.insert('', 'end', text=text, values=values, open=open)
         else:
             new_row = self._widget.insert(parent_row, 'end', text=text, values=values, open=open)
-        if return_row:
-            return new_row
+        return new_row
 
     def clear(self) -> None:
         '''
@@ -350,61 +354,14 @@ class Tree(Widget):
         '''
         Shortcut/convenience binding method
         '''
-        self.bind_event('<<TreeviewSelect>>', command_func, separate_thread=separate_thread)
+        def command_func_with_tree_reselect(*args):
+            command_func()
+            # NEXT LINE NECESSARY to allow refocusing on tree due to odd Matplotlib behavior/bug?
+            # See: https://github.com/matplotlib/matplotlib/issues/14081  (issue with FigureCanvasTkAgg.__init__ steals focus)
+            self.root.update()
+            self._widget.focus_set()  # want to refocus/keep focus on tree if lost it during command_func
 
-    def get_iids(self) -> List[str]:
-        '''
-        Return list of all row iid values in current order of rows.
-        '''
-        def children_iids(parent) -> List[str]:
-            '''Recursive function that returns (in order) all children of a given iid'''
-            running_iids = []
-            for child in self._widget.get_children(parent):
-                running_iids.append(child)
-                grandkids = children_iids(child)
-                if grandkids != ():
-                    for grandkid in grandkids:
-                        running_iids.extend(children_iids(grandkid))
-            return running_iids
-        iids = []
-        for top_level in self._widget.get_children():
-            iids.append(top_level)
-            iids.extend(children_iids(top_level))
-        return iids
-
-    def _up_down_arrow(self, a, up_or_down: str) -> None:
-        '''
-        Allows Up or Down arrow to change the row selection in the tree
-        '''
-        current_row = self._widget.focus()
-        iids = self.get_iids()
-        for iid in iids:  # unselect all rows
-            self._widget.item(iid, tags='0')
-
-        current_row_iid_index = next(index for index, iid in enumerate(iids) if iid == current_row)
-
-        if up_or_down == 'up':
-            if current_row > iids[0]:
-                new_iid = iids[current_row_iid_index - 1]
-                self._widget.selection_set(new_iid)
-                self._widget.focus(new_iid)
-        elif up_or_down == 'down':
-            if current_row < iids[-1]:
-                new_iid = iids[current_row_iid_index + 1]
-                self._widget.selection_set(new_iid)
-                self._widget.focus(new_iid)
-
-    def up_arrow(self, a) -> None:
-        '''
-        Go up a selection in the tree on user's up-arrow.
-        '''
-        self._up_down_arrow(a, 'up')
-
-    def down_arrow(self, a) -> None:
-        '''
-        Go down a selection in the tree on user's down-arrow.
-        '''
-        self._up_down_arrow(a, 'down')
+        self.bind_event('<<TreeviewSelect>>', command_func_with_tree_reselect, separate_thread=separate_thread)
 
 
 class MatplotlibPlot(Widget):

@@ -171,6 +171,11 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         self.wm_attributes('-topmost', topmost)  # make root window always on top
         self.overrideredirect(overrideredirect)  # hide root window drag bar and close button
 
+        s = ttk.Style()
+        s.configure('.', background=self.style.widget_bg_color)
+        s.configure('.', font=self.style.font)
+        s.configure('.', foreground=self.style.text_color)
+
 
     def __init_subclass__(cls, **kwargs):
         '''

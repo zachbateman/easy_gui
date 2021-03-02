@@ -23,13 +23,12 @@ class TestGUI(easy_gui.EasyGUI):
         tree.insert_column('TestCol2')
         tree.insert_column('TestCol3')
 
-        node1 = tree.insert_row('Node #1', ('test', 'test2', 'test3'), return_row=True, open=True)
+        node1 = tree.insert_row('Node #1', ('test', 'test2', 'test3'), open=True)
         node2 = tree.insert_row('Node #2', ('', 'Xxxx'))
         tree.insert_row('Item A', ('test2', 'dude'), parent_row=node1)
         tree.insert_row('Item B', ('...', '...'), parent_row=node1)
         tree.insert_row('Item C', ('...', '...'), parent_row=node2)
 
-        print(tree.get_iids())
         self.plot_section = self.add_section('plot')
         self.plot = self.plot_section.add_widget(type='matplotlib')
 
