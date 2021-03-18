@@ -215,14 +215,11 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         (so next key doesn't trigger same result)
         '''
         key_str = ''.join(self.key_log)
-        triggered = False
         for trigger, action in self.key_triggers:
             if trigger in key_str:
+                self.key_log = []
                 action()
-                triggered = True
                 break
-        if triggered:
-            self.key_log = []
 
     def add_key_trigger(self, trigger, func, separate_thread: bool=False):
         '''
