@@ -11,6 +11,7 @@ from . import widgets
 import os
 import sys
 import threading
+import traceback
 from typing import List, Dict
 
 
@@ -188,7 +189,8 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
             try:
                 old_init(self, *args, **kwargs)
             except TypeError:
-                print('\nAre you passing in kwargs to GUI creation?\nIf so, remember to put a "**kwargs" in the __init__ function!')
+                print('\n* Are you passing in kwargs to GUI creation?\n* If so, remember to put a "**kwargs" in the __init__ function!\n')
+                traceback.print_exc()
             self.create()  # populates GUI elements
             self.bind_all('<Key>', self.log_keys)
             self.mainloop()  # runs tkinter mainloop
