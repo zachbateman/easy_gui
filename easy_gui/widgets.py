@@ -107,6 +107,10 @@ class Widget(tk.Frame):
         '''
         return float(self._widget['height'])
 
+    def config(self, *args, **kwargs):
+        '''Just pass a config call through to the tkinter widget itself.'''
+        return self._widget.config(*args, **kwargs)
+
 
 def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **kwargs):
         '''

@@ -92,7 +92,7 @@ class SectionMaster():
         self.sections: dict = {}
 
     def add_section(self, name='', title=False, grid_area=None,
-                               borderwidth=None, relief=None, tabbed: bool=False):
+                               borderwidth=None, relief=None, tabbed: bool=False, equal_button_width: bool=False):
         '''
         Add a Section object to the parent (root window or other Section).
         '''
@@ -111,7 +111,7 @@ class SectionMaster():
             grid_area = name
 
         section = Section(parent=self, name=name, title=title, grid_area=grid_area,
-                                    borderwidth=borderwidth, relief=relief, tabbed=tabbed)
+                                    borderwidth=borderwidth, relief=relief, tabbed=tabbed, equal_button_width=equal_button_width)
         self.sections[name] = section
         return section
 
@@ -299,7 +299,8 @@ class Section(tk.Frame, GridMaster, SectionMaster):
     A Section is a tk.Frame used for storing and managing widgets.
     Sections exist as children of the root (EasyGUI) window or other Sections.
     '''
-    def __init__(self, parent=None, name='', title=False, grid_area=None, tabbed: bool=False, **kwargs) -> None:
+    def __init__(self, parent=None, name='', title=False, grid_area=None,
+                       tabbed: bool=False, equal_button_width: bool=False, **kwargs) -> None:
         borderwidth = kwargs.get('borderwidth', 1)
         relief = kwargs.get('relief', 'ridge')
         self.tabbed = tabbed
@@ -318,6 +319,7 @@ class Section(tk.Frame, GridMaster, SectionMaster):
             self.tabs = ttk.Notebook(self)
             self.tabs.style = self.style
             self.tabs.root = self.root
+        self.equal_button_width = equal_button_width
         self.widgets: dict = {}
         if title:  # title kwargs can be provided as True or a string
             if isinstance(title, str):  # if string, use title for label text
@@ -341,11 +343,20 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         positioning all children (Sections and/or Widgets).
         '''
         self.position(force_row)
+        if self.equal_button_width:
+            self.match_child_button_widths()
         for child in {**self.widgets, **self.sections}.values():
             try:
                 child.create(force_row)  # if child is another Section object
             except AttributeError:
                 child.position(force_row)  # if child is a Widget object
+
+    def match_child_button_widths(self):
+        child_buttons = [child for child in self.widgets.values() if isinstance(child, widgets.Button)]
+        if len(child_buttons) > 1:
+            max_width = int(round(max(child.width / 7.0 for child in child_buttons)))
+            for child in child_buttons:
+                child.config(width=max_width)
 
     def position(self, force_row: bool=False) -> None:
         '''
