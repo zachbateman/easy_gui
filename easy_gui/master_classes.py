@@ -115,11 +115,11 @@ class SectionMaster():
         self.sections[name] = section
         return section
 
-    def add_tab(self, name=''):
+    def add_tab(self, name='', **kwargs):
         if not self.tabbed:
             print('Error!  Cannot .add_tab to a Section unless tabbed=True when it is created.')
             return
-        section = Section(parent=self.tabs, name=name)
+        section = Section(parent=self.tabs, name=name, **kwargs)
         self.sections[name] = section
         self.tabs.add(section, text=name)
         return section
