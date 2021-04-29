@@ -131,7 +131,7 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower in ['button', 'btn']:
             new_widget = Button(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('button')] = new_widget
-        elif type_lower == 'entry':
+        elif type_lower in ['entry', 'input']:
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
         elif type_lower in ['checkbox', 'checkbutton']:
