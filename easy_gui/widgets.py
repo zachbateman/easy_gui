@@ -49,8 +49,8 @@ class Widget(tk.Frame):
                 try:
                     bounds = self.parent.grid_areas[self.grid_area]
                     if isinstance(self, Tree):
-                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW
-                        self._widget.pack(side='left')
+                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
+                        self._widget.pack(side='left', fill=tk.BOTH, expand=True)
                         self.scrollbar.pack(side='right', fill='y')
                     else:
                         self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
