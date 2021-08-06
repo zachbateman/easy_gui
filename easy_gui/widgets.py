@@ -143,6 +143,9 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower == 'listbox':
             new_widget = ListBox(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('listbox')] = new_widget
+        elif type_lower == 'table':
+            new_widget = Table(master=self, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('table')] = new_widget
         elif type_lower == 'tree':
             new_widget = Tree(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('tree')] = new_widget
@@ -366,6 +369,22 @@ class Tree(Widget):
             self._widget.focus_set()  # want to refocus/keep focus on tree if lost it during command_func
 
         self.bind_event('<<TreeviewSelect>>', command_func_with_tree_reselect, separate_thread=separate_thread)
+
+
+class Table(Widget):
+    def __init__(self, master=None, section=None, widget_name=None, **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        self.section = section
+        self.widget_name = widget_name
+        self.grid_area = kwargs.get('grid_area')
+        self.kwargs = kwargs
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
+        self._widget = ...
+        # TODO: use a grid of Entry widgets for a table? (or Label widgets?)
+        # Want to have capability to edit cells
+        # Need copy/paste ability if enabled
+        # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
 
 
 class MatplotlibPlot(Widget):
