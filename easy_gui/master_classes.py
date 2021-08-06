@@ -92,26 +92,32 @@ class SectionMaster():
         self.sections: dict = {}
 
     def add_section(self, name='', title=False, grid_area=None,
-                               borderwidth=None, relief=None, tabbed: bool=False, equal_button_width: bool=False):
+                               borderwidth=None, relief=None, tabbed: bool=False, equal_button_width: bool=False, external_section=None):
         '''
         Add a Section object to the parent (root window or other Section).
         '''
-        if name == '':
-            name = f'section{len(self.sections) + 1}'
-        if name in self.sections:
-            raise ValueError('Unable to add section as a section with the given name already exists!')
+        if external_section:  # if is an externally-built section is passed in
+            if not name:
+                name = external_section.__name__
+            section = external_section(parent=self, name=name, title=title, grid_area=grid_area,
+                                        borderwidth=borderwidth, relief=relief, tabbed=tabbed, equal_button_width=equal_button_width)
+        else:
+            if name == '':
+                name = f'section{len(self.sections) + 1}'
+            if name in self.sections:
+                raise ValueError('Unable to add section as a section with the given name already exists!')
 
-        if borderwidth is None:
-            borderwidth = self.style.borderwidth
-        if relief is None:
-            relief = self.style.section_border
+            if borderwidth is None:
+                borderwidth = self.style.borderwidth
+            if relief is None:
+                relief = self.style.section_border
 
-        # Next 2 lines set grid_area to be name if not explicitly declared and not already used as a grid_area
-        if grid_area is None and name not in [s.grid_area for s in self.sections.values()]:
-            grid_area = name
+            # Next 2 lines set grid_area to be name if not explicitly declared and not already used as a grid_area
+            if grid_area is None and name not in [s.grid_area for s in self.sections.values()]:
+                grid_area = name
 
-        section = Section(parent=self, name=name, title=title, grid_area=grid_area,
-                                    borderwidth=borderwidth, relief=relief, tabbed=tabbed, equal_button_width=equal_button_width)
+            section = Section(parent=self, name=name, title=title, grid_area=grid_area,
+                                        borderwidth=borderwidth, relief=relief, tabbed=tabbed, equal_button_width=equal_button_width)
         self.sections[name] = section
         return section
 
@@ -303,6 +309,8 @@ class Section(tk.Frame, GridMaster, SectionMaster):
                        tabbed: bool=False, equal_button_width: bool=False, **kwargs) -> None:
         borderwidth = kwargs.get('borderwidth', 1)
         relief = kwargs.get('relief', 'ridge')
+        if relief != 'ridge' and not borderwidth:
+            borderwidth = 1
         self.tabbed = tabbed
         super().__init__(master=parent,
                          bg=EasyGUI.style.section_color,
