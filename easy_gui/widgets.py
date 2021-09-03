@@ -51,7 +51,7 @@ class Widget(tk.Frame):
                     if isinstance(self, Tree):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
                         self._widget.pack(side='left', fill=tk.BOTH, expand=True)
-                        self.scrollbar.pack(side='right', fill='y')
+                        self.scrollbar.pack(side='left', fill='y')
                     else:
                         self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                     return  # early return if everything works fine with initial attempt (no other actions needed)
@@ -201,14 +201,21 @@ class Button(Widget):
 
 
 class Label(Widget):
-    def __init__(self, master=None, text='label', **kwargs) -> None:
+    def __init__(self, master=None, text='label', bold=False, underline=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
         self.strvar = tk.StringVar()
         self.set(text)
         del kwargs['grid_area']
+        font = self.style.font
+        if bold:
+            font = self.style.font_bold
+        if underline:
+            font = self.style.font_underline
+        if bold and underline:
+            font = self.style.font_underline
         self._widget = tk.Label(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
-                                padx=self.style.label_padx, pady=self.style.label_pady, font=self.style.font, **kwargs)
+                                padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
 
     def get(self):
         return self.strvar.get()

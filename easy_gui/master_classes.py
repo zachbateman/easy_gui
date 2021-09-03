@@ -163,7 +163,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 
         self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
         self.title('EasyGUI')
-        self.geometry("300x180+200+200")  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
+        self.geometry("300x180+100+60")  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
         self.transparent = False
         self.configure(background=self.style.window_color)
 

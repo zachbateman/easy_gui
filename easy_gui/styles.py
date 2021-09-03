@@ -2,6 +2,7 @@
 Python module that supplies styling used by easy_gui widgets.
 '''
 from tkinter import font
+from copy import deepcopy
 
 
 class BaseStyle():
@@ -33,6 +34,12 @@ class BaseStyle():
         self.widget_bg_color = self.section_color
         self.button_color = '#8AC'
 
+
+    # def configure_ttk_styles(self):
+    #     ttk.Style().configure('Treeview', highlightcolor='BBBBBB', background=self.section_color, foreground=self.text_color, fieldbackground=self.section_color)
+    #     ttk.Style().configure('Treeview.Heading', highlightthickness=0, background='BBBBBB', show=False)
+
+
     def create_font(self):
         '''
         Create self.font attribute as a tkinter font.Font object.
@@ -42,6 +49,13 @@ class BaseStyle():
         '''
         if hasattr(self, '_font'):
             self.font = font.Font(**self._font)
+            bold = deepcopy(self._font)
+            bold['weight'] = 'bold'
+            self.font_bold = font.Font(**bold)
+            self.font_underline = font.Font(**self._font)
+            self.font_underline.configure(underline=True)
+            self.font_bold_underline = deepcopy(self.font_bold)
+            self.font_bold_underline.configure(underline=True)
         else:
             self.font = None  # passing None to widget creation will use default Tkinter Fonts
 
