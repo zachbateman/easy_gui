@@ -52,6 +52,10 @@ class Widget(tk.Frame):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
                         self._widget.pack(side='left', fill=tk.BOTH, expand=True)
                         self.scrollbar.pack(side='left', fill='y')
+                    elif isinstance(self, LabelEntry):
+                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+                        self._lbl_widget.pack(side='left', expand=True)
+                        self._widget.pack(side='left')
                     else:
                         self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                     return  # early return if everything works fine with initial attempt (no other actions needed)
@@ -134,6 +138,9 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower in ['entry', 'input']:
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
+        elif type_lower in ['labelentry']:
+            new_widget = LabelEntry(master=self, text=text, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('labelentry')] = new_widget
         elif type_lower in ['checkbox', 'checkbutton']:
             new_widget = CheckBox(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('checkbox')] = new_widget
@@ -247,11 +254,49 @@ class Entry(Widget):
         del kwargs['grid_area']
         self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
 
+
     def get(self):
         return self._widget.get()
 
     def set(self, value):
         self.strvar.set(value)
+
+
+class LabelEntry(Widget):
+    '''
+    Widget combining a Label and and Entry in one (common use case).
+    '''
+    def __init__(self, master=None, text='label', bold=False, underline=False, **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        self.text = text
+        self.lbl_strvar = tk.StringVar()
+        self.set(text)
+        del kwargs['grid_area']
+        font = self.style.font
+        if bold:
+            font = self.style.font_bold
+        if underline:
+            font = self.style.font_underline
+        if bold and underline:
+            font = self.style.font_underline
+        self._lbl_widget = tk.Label(master=self, textvariable=self.lbl_strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
+                                padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
+
+        self.strvar = tk.StringVar()
+        self._widget = tk.Entry(master=self, textvariable=self.strvar, **kwargs)
+
+    def destroy(self):
+        '''Need custom destroy method as also have a _lbl_widget.'''
+        self._lbl_widget.destroy()
+        self._widget.destroy()
+
+    def get(self):
+        '''Get the value in the Entry box.'''
+        return self._widget.get()
+
+    def set(self, value):
+        '''Set the value in the Label.'''
+        self.lbl_strvar.set(value)
 
 
 class CheckBox(Widget):
@@ -488,16 +533,6 @@ class StdOutBox(Widget):
         Makes self a "file-like object."
         '''
         pass
-
-
-class LabelEntry(Widget):
-    '''
-    Widget combining a Label and and Entry in one (common use case).
-    '''
-    def __init__(self, master=None, **kwargs) -> None:
-        super().__init__(master=master, **kwargs)
-
-        # TODO: Make this widget...
 
 
 class DatePicker(Widget):
