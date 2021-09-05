@@ -395,10 +395,11 @@ class Table(Widget):
 
 
 class MatplotlibPlot(Widget):
-    def __init__(self, master=None, section=None, widget_name=None, **kwargs) -> None:
+    def __init__(self, master=None, section=None, widget_name=None, toolbar=True, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.section = section  # grabbing handle to Section so IT can handle replotting
         self.widget_name = widget_name
+        self.toolbar = toolbar
         self.grid_area = kwargs.get('grid_area')
         self.kwargs = kwargs
         if 'grid_area' in kwargs:
@@ -419,13 +420,14 @@ class MatplotlibPlot(Widget):
         else:
             self.plot_drawn = True
             self.fig_canvas = FigureCanvasTkAgg(mpl_figure, self._widget)
-            toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
-            # NOW TO MINIMIZE CRAZY FLICKERING/REDRAWING......
-            # The next line overwrites and ignores the ._wait_cursor_for_draw_cm method
-            # which is a context manager call in matplotlib.backends.backend_agg.FigureCanvasAgg.draw (line ~390).
-            # This context manager appears to only attempt to change the cursor to a "wait" cursor... but I don't see it actually doing that,
-            # and it's slow and therefore making the plot redraw take way too long and look ridiculous.
-            toolbar._wait_cursor_for_draw_cm = lambda: nullcontext()
+            if self.toolbar:
+                toolbar = NavigationToolbar2Tk(self.fig_canvas, self._widget)
+                # NOW TO MINIMIZE CRAZY FLICKERING/REDRAWING......
+                # The next line overwrites and ignores the ._wait_cursor_for_draw_cm method
+                # which is a context manager call in matplotlib.backends.backend_agg.FigureCanvasAgg.draw (line ~390).
+                # This context manager appears to only attempt to change the cursor to a "wait" cursor... but I don't see it actually doing that,
+                # and it's slow and therefore making the plot redraw take way too long and look ridiculous.
+                toolbar._wait_cursor_for_draw_cm = lambda: nullcontext()
             self.fig_canvas.get_tk_widget().pack(expand=True)
 
             # Check if provided figure is wide enough to prevent unstable width changing on mouseover...
