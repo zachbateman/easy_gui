@@ -34,11 +34,6 @@ class BaseStyle():
         self.button_color = '#8AC'
 
 
-    # def configure_ttk_styles(self):
-    #     ttk.Style().configure('Treeview', highlightcolor='BBBBBB', background=self.section_color, foreground=self.text_color, fieldbackground=self.section_color)
-    #     ttk.Style().configure('Treeview.Heading', highlightthickness=0, background='BBBBBB', show=False)
-
-
     def create_font(self):
         '''
         Create self.font attribute as a tkinter font.Font object.

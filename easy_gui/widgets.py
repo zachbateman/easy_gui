@@ -56,6 +56,9 @@ class Widget(tk.Frame):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
                         self._lbl_widget.pack(side='left', expand=True)
                         self._widget.pack(side='left')
+                    elif isinstance(self, Table):
+                        self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
+                        self.grid_cells()
                     else:
                         self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                     return  # early return if everything works fine with initial attempt (no other actions needed)
@@ -213,7 +216,8 @@ class Label(Widget):
         self.text = text
         self.strvar = tk.StringVar()
         self.set(text)
-        del kwargs['grid_area']
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
         font = self.style.font
         if bold:
             font = self.style.font_bold
@@ -251,7 +255,8 @@ class Entry(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.strvar = tk.StringVar()
-        del kwargs['grid_area']
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
         self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
 
 
@@ -424,19 +429,60 @@ class Tree(Widget):
 
 
 class Table(Widget):
-    def __init__(self, master=None, section=None, widget_name=None, **kwargs) -> None:
+    # TODO: Add option to just use Label widgets instead of Entry?)
+    # Want to have capability to edit cells
+    # Need copy/paste ability if enabled
+    # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
+    def __init__(self, master=None, section=None, widget_name=None, type:str='label', rows:int=4, columns:int=3, **kwargs) -> None:
+        '''
+        type can be 'label' or 'entry'
+        '''
         super().__init__(master=master, **kwargs)
         self.section = section
         self.widget_name = widget_name
+        self.type = type
+        self.rows = rows
+        self.column = columns
         self.grid_area = kwargs.get('grid_area')
         self.kwargs = kwargs
         if 'grid_area' in kwargs:
             del kwargs['grid_area']
-        self._widget = ...
-        # TODO: use a grid of Entry widgets for a table? (or Label widgets?)
-        # Want to have capability to edit cells
-        # Need copy/paste ability if enabled
-        # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
+
+        self.cells = {row: {col: None for col in range(1, columns+1)} for row in range(1, rows+1)}
+        self.cell_list = []  # another reference to the same cell objects in list form for easier access in some cases
+
+        self._widget = tk.Frame(bg=master.style.section_color)
+        self._widget.style = master.style
+        for row in range(1, rows+1):
+            for col in range(1, columns+1):
+                if self.type == 'label':
+                    new_cell = Label(master=self._widget)
+                    new_cell.set(f'Cell [{row}, {col}]')
+                elif self.type == 'entry':
+                    new_cell = Entry(master=self._widget)
+                new_cell.row = row
+                new_cell.column = col
+                self.cells[row][col] = new_cell
+                self.cell_list.append(new_cell)
+
+
+    def grid_cells(self):
+        for cell in self.cell_list:
+            cell._widget.grid(row=cell.row-1, column=cell.column-1)
+
+    def __getitem__(self, indices):
+        row, column = indices
+        return self.cells[row][column].get()
+
+    def __setitem__(self, indices, value):
+        row, column = indices
+        self.cells[row][column].set(value)
+
+    def destroy(self):
+        for cell in self.cell_list:
+            cell.destroy()
+        self._widget.destroy()
+
 
 
 class MatplotlibPlot(Widget):
