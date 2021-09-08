@@ -57,7 +57,7 @@ class Widget(tk.Frame):
                         self._lbl_widget.pack(side='left', expand=True)
                         self._widget.pack(side='left')
                     elif isinstance(self, Table):
-                        self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
+                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                         self.grid_cells()
                     else:
                         self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
@@ -141,7 +141,7 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower in ['entry', 'input']:
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
-        elif type_lower in ['labelentry']:
+        elif type_lower in ['labelentry', 'entrylabel']:
             new_widget = LabelEntry(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('labelentry')] = new_widget
         elif type_lower in ['checkbox', 'checkbutton']:
@@ -224,7 +224,7 @@ class Label(Widget):
         if underline:
             font = self.style.font_underline
         if bold and underline:
-            font = self.style.font_underline
+            font = self.style.font_bold_underline
         self._widget = tk.Label(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
                                 padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
 
@@ -283,7 +283,7 @@ class LabelEntry(Widget):
         if underline:
             font = self.style.font_underline
         if bold and underline:
-            font = self.style.font_underline
+            font = self.style.font_bold_underline
         self._lbl_widget = tk.Label(master=self, textvariable=self.lbl_strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
                                 padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
 
@@ -429,7 +429,6 @@ class Tree(Widget):
 
 
 class Table(Widget):
-    # TODO: Add option to just use Label widgets instead of Entry?)
     # Want to have capability to edit cells
     # Need copy/paste ability if enabled
     # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
@@ -450,16 +449,13 @@ class Table(Widget):
 
         self.cells = {row: {col: None for col in range(1, columns+1)} for row in range(1, rows+1)}
         self.cell_list = []  # another reference to the same cell objects in list form for easier access in some cases
-
-        self._widget = tk.Frame(bg=master.style.section_color)
-        self._widget.style = master.style
         for row in range(1, rows+1):
             for col in range(1, columns+1):
                 if self.type == 'label':
-                    new_cell = Label(master=self._widget)
+                    new_cell = Label(master=self)  # self is a tk.Frame
                     new_cell.set(f'Cell [{row}, {col}]')
                 elif self.type == 'entry':
-                    new_cell = Entry(master=self._widget)
+                    new_cell = Entry(master=self)  # self is a tk.Frame
                 new_cell.row = row
                 new_cell.column = col
                 self.cells[row][col] = new_cell
@@ -481,7 +477,6 @@ class Table(Widget):
     def destroy(self):
         for cell in self.cell_list:
             cell.destroy()
-        self._widget.destroy()
 
 
 
