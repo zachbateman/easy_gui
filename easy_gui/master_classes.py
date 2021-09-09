@@ -17,6 +17,21 @@ from typing import List, Dict
 
 
 
+def recreate_if_needed(func):
+    '''
+    Decorator used to enable addition of Sections or Widgets after GUI has been created.
+    (that is, can add elements outside of EasyGUI subclass' __init__ method)
+    '''
+    def inner(*args, **kwargs):
+        self = args[0]
+        value = func(*args, **kwargs)
+        if self.root.created:
+            self.root.create()  # need to re-create GUI so that the new elements show up!
+        return value
+    return inner
+
+
+
 class GridMaster():
     def __init__(self):
         self.grid_areas = {}
@@ -86,11 +101,11 @@ class GridMaster():
 
 
 
-
 class SectionMaster():
     def __init__(self):
         self.sections: dict = {}
 
+    @recreate_if_needed
     def add_section(self, name='', title=False, grid_area=None,
                                borderwidth=None, relief=None, tabbed: bool=False, equal_button_width: bool=False, external_section=None):
         '''
@@ -121,6 +136,7 @@ class SectionMaster():
         self.sections[name] = section
         return section
 
+    @recreate_if_needed
     def add_tab(self, name='', **kwargs):
         if not self.tabbed:
             print('Error!  Cannot .add_tab to a Section unless tabbed=True when it is created.')
@@ -183,11 +199,12 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         s.configure('.', font=self.style.font)
         s.configure('.', foreground=self.style.text_color)
 
+        self.created = False
 
     def __init_subclass__(cls, **kwargs):
         '''
         Wraps user subclass __init__ to implicitly handle the EasyGUI.__init__ call along with
-        calling .create_gui() after application is fully defined in subclass __init__ method
+        calling .create() after application is fully defined in subclass __init__ method
         '''
         old_init = cls.__init__  # reference to original subclass method so new_init isn't recursive
         def new_init(self, *args, **kwargs):
@@ -270,6 +287,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         '''
         for name, section in self.sections.items():
             section.create(force_row=force_row)
+        self.created = True
 
     def add_menu(self,
                  commands={'File': lambda: print('File button'), 'Edit': lambda: print('Edit button')},
@@ -290,6 +308,7 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 
         self.config(menu=self.menu)
 
+    @recreate_if_needed
     def add_widget(self, *args, **kwargs):
         '''
         Same as Section.add_widget, but works if used on main GUI class without specifying a Section.
@@ -392,6 +411,7 @@ class Section(tk.Frame, GridMaster, SectionMaster):
             print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.\nAdding to a new row instead.')
             self.parent.create(force_row=True)  # go back and fully recreate section forcing all children to be packed/in new rows
 
+    @recreate_if_needed
     def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **kwargs):
         '''
         Add a Widget object to this Section by calling the add_widget function in widgets.py
