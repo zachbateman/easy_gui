@@ -76,14 +76,14 @@ class Widget(tk.Frame):
     def bind_click(self, command_func, separate_thread: bool=False) -> None:
         '''
         Bind a left-mouse click to the widget to trigger a target "command_func" function.
-        Note that the "_widget" attribute of subclasses is assumed to be the tkinter widget itself!!!
         '''
-        if separate_thread:
-            def threaded_command_func(*args):
-                threading.Thread(target=command_func).start()
-            self._widget.bind('<Button-1>', threaded_command_func, add='+')
-        else:
-            self._widget.bind('<Button-1>', command_func, add='+')
+        self.bind_event('<Button-1>', command_func, separate_thread=separate_thread)
+
+    def bind_select(self, command_func, separate_thread: bool=False) -> None:
+        '''
+        Bind a left-mouse click to the widget to trigger a target "command_func" function.
+        '''
+        self.bind_event('<Button-1>', command_func, separate_thread=separate_thread)
 
     def bind_event(self, event: str, command_func, separate_thread: bool=False) -> None:
         '''
@@ -492,6 +492,7 @@ class MatplotlibPlot(Widget):
             del kwargs['grid_area']
         self._widget = tk.Canvas(master=master, **kwargs)
         self.plot_drawn = False
+        self.bindings = []
 
     def draw_plot(self, mpl_figure=None) -> None:
         '''
@@ -516,9 +517,25 @@ class MatplotlibPlot(Widget):
                 toolbar._wait_cursor_for_draw_cm = lambda: nullcontext()
             self.fig_canvas.get_tk_widget().pack(expand=True)
 
+            self.reset_bindings()
             # Check if provided figure is wide enough to prevent unstable width changing on mouseover...
-            if mpl_figure.bbox._points[1][0] < 400:
-                print('\nCaution!  Plot Matplotlib Figure with width >=4 to prevent unstable chart width.')
+            # if mpl_figure.bbox._points[1][0] < 400:
+                # print('\nCaution!  Plot Matplotlib Figure with width >=4 to prevent unstable chart width.')
+
+    def bind_event(self, event: str, command_func, separate_thread: bool=False) -> None:
+        '''
+        Custom bind_event method as need to intercept/store these and bind them AFTER every call to draw_plot.
+        '''
+        self.bindings.append((event, command_func, separate_thread))
+
+    def reset_bindings(self):
+        for event, command_func, separate_thread in self.bindings():
+            if separate_thread:
+                def threaded_command_func(*args):
+                    threading.Thread(target=command_func).start()
+                self.fig_canvas._tkcanvas.bind(event, threaded_command_func, add='+')
+            else:
+                self.fig_canvas._tkcanvas.bind(event, command_func, add='+')
 
     def __repr__(self):
         return f'MatplotlibPlot Widget: {self.widget_name} which belongs to: {self.section}'

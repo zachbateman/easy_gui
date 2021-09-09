@@ -422,6 +422,7 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         old_widget = self.widgets[widget_name]  # grab reference to widget to be deleted so that its place in dict can be given to new widget
 
         new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, toolbar=old_widget.toolbar, grid_area=grid_area)
+        new_widget.bindings = old_widget.bindings
         new_widget.position()
         new_widget.draw_plot(mpl_figure=mpl_figure)
         new_widget.position()  # have to reposition/create Widget
