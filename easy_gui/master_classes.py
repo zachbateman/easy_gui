@@ -74,9 +74,9 @@ class GridMaster():
         if self.grid_areas != {}:
             limits = self.grid_limits()
             for row in range(limits['min_row'], limits['max_row'] + 1):
-                self.grid_rowconfigure(row, weight=1, minsize=30)
+                self.grid_rowconfigure(row, weight=1, minsize=10)
             for col in range(limits['min_col'], limits['max_col'] + 1):
-                self.grid_columnconfigure(col, weight=1, minsize=30)
+                self.grid_columnconfigure(col, weight=1, minsize=10)
 
     def add_grid_row(self, row_name: str):
         if self.grid_configuration == []:
@@ -439,22 +439,23 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         Physically position this Section within its parent container.
         '''
         try:
-            if self.parent.grid_areas != {} and self.grid_area and not force_row:
-                try:
-                    if not hasattr(self.parent, 'tabbed') or not self.parent.tabbed:
-                        bounds = self.parent.grid_areas[self.grid_area]
-                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
-                    else:
-                        self.pack()
-                    if self.tabbed:
-                        self.tabs.pack()
-                    return  # early return if everything works fine with initial attempt (no other actions needed)
-                except KeyError:
-                    if self.grid_area != self.name:  # basically, if user-specified grid_area (are same if programatically set grid_area)
-                        print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
-            self.parent.add_grid_row(self.name)
-            self.grid_area = self.name
-            self.parent.create()
+            if hasattr(self.parent, 'grid_areas'):
+                if self.parent.grid_areas != {} and self.grid_area and not force_row:
+                    try:
+                        if not hasattr(self.parent, 'tabbed') or not self.parent.tabbed:
+                            bounds = self.parent.grid_areas[self.grid_area]
+                            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
+                        else:
+                            self.pack()
+                        if self.tabbed:
+                            self.tabs.pack()
+                        return  # early return if everything works fine with initial attempt (no other actions needed)
+                    except KeyError:
+                        if self.grid_area != self.name:  # basically, if user-specified grid_area (are same if programatically set grid_area)
+                            print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
+                self.parent.add_grid_row(self.name)
+                self.grid_area = self.name
+                self.parent.create()
         except _tkinter.TclError:
             print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.\nAdding to a new row instead.')
             self.parent.create(force_row=True)  # go back and fully recreate section forcing all children to be packed/in new rows
@@ -491,6 +492,7 @@ class Section(tk.Frame, GridMaster, SectionMaster):
 
         new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, toolbar=old_widget.toolbar, grid_area=grid_area)
         new_widget.bindings = old_widget.bindings
+        new_widget.small_figure_warning_given = old_widget.small_figure_warning_given
         new_widget.position()
         new_widget.draw_plot(mpl_figure=mpl_figure)
         new_widget.position()  # have to reposition/create Widget

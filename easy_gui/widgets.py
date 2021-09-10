@@ -358,11 +358,11 @@ class ListBox(Widget):
 
 
 class Tree(Widget):
-    def __init__(self, master=None, tree_col_header: str='Name', tree_col_width: int=120, **kwargs) -> None:
+    def __init__(self, master=None, tree_col_header: str='Name', height: int=30, tree_col_width: int=120, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
 
         del kwargs['grid_area']
-        self._widget = ttk.Treeview(self, columns=(), style='Treeview', show='tree headings', height=10, **kwargs)
+        self._widget = ttk.Treeview(self, columns=(), style='Treeview', show='tree headings', height=height, **kwargs)
         self.tree_col_header = tree_col_header
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
         self.scrollbar = ttk.Scrollbar(self, orient='vertical')
@@ -492,6 +492,7 @@ class MatplotlibPlot(Widget):
         self._widget = tk.Canvas(master=master, **kwargs)
         self.plot_drawn = False
         self.bindings = []
+        self.small_figure_warning_given = False
 
     def draw_plot(self, mpl_figure=None) -> None:
         '''
@@ -518,8 +519,9 @@ class MatplotlibPlot(Widget):
 
             self.reset_bindings()
             # Check if provided figure is wide enough to prevent unstable width changing on mouseover...
-            # if mpl_figure.bbox._points[1][0] < 400:
-                # print('\nCaution!  Plot Matplotlib Figure with width >=4 to prevent unstable chart width.')
+            if mpl_figure.bbox._points[1][0] < 400 and not self.small_figure_warning_given:
+                print('\nCaution!  Plot Matplotlib Figure with width >=4 to prevent unstable chart width.')
+                self.small_figure_warning_given = True  # used to only print warning once
 
     def bind_event(self, event: str, command_func, separate_thread: bool=False) -> None:
         '''
