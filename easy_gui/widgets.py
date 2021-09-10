@@ -159,7 +159,7 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower == 'tree':
             new_widget = Tree(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('tree')] = new_widget
-        elif type_lower == 'matplotlib':
+        elif type_lower in ['matplotlib', 'matplotlibplot']:
             new_widget = MatplotlibPlot(master=self, section=self, widget_name=new_widget_name('matplotlibplot'), grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('matplotlibplot')] = new_widget
         elif type_lower == 'stdout':
@@ -258,7 +258,6 @@ class Entry(Widget):
         if 'grid_area' in kwargs:
             del kwargs['grid_area']
         self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
-
 
     def get(self):
         return self._widget.get()
@@ -363,7 +362,7 @@ class Tree(Widget):
         super().__init__(master=master, **kwargs)
 
         del kwargs['grid_area']
-        self._widget = ttk.Treeview(self, columns=(), style='Treeview', show='tree headings', height=30, **kwargs)
+        self._widget = ttk.Treeview(self, columns=(), style='Treeview', show='tree headings', height=10, **kwargs)
         self.tree_col_header = tree_col_header
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
         self.scrollbar = ttk.Scrollbar(self, orient='vertical')
@@ -529,7 +528,7 @@ class MatplotlibPlot(Widget):
         self.bindings.append((event, command_func, separate_thread))
 
     def reset_bindings(self):
-        for event, command_func, separate_thread in self.bindings():
+        for event, command_func, separate_thread in self.bindings:
             if separate_thread:
                 def threaded_command_func(*args):
                     threading.Thread(target=command_func).start()

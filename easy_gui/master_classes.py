@@ -74,9 +74,9 @@ class GridMaster():
         if self.grid_areas != {}:
             limits = self.grid_limits()
             for row in range(limits['min_row'], limits['max_row'] + 1):
-                self.grid_rowconfigure(row, weight=1)
+                self.grid_rowconfigure(row, weight=1, minsize=30)
             for col in range(limits['min_col'], limits['max_col'] + 1):
-                self.grid_columnconfigure(col, weight=1)
+                self.grid_columnconfigure(col, weight=1, minsize=30)
 
     def add_grid_row(self, row_name: str):
         if self.grid_configuration == []:
@@ -318,6 +318,55 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
             self.add_section('_default')
         return self.sections['_default'].add_widget(*args, **kwargs)
 
+    def popup(self):
+        '''
+        Returns a context manager for generating a popup window.  Example usage:
+
+        with self.popup() as popup:
+            popup.add_widget('lbl', 'Test1')
+            popup.add_widget('btn', 'Test Button', command_func=lambda *args: print('Test Button clicked'))
+        '''
+        return PopUp()
+
+
+class PopUp(tk.Toplevel, GridMaster, SectionMaster):
+    '''
+    Basically a mini EasyGUI class that inherits from tk.Toplevel instead of tk.Tk.
+    Re-implements basic methods of EasyGUI class so widgets can be added.
+    '''
+    def __init__(self):
+        super().__init__()
+        GridMaster.__init__(self)
+        SectionMaster.__init__(self)
+        self.style = EasyGUI.style
+        self.style.create_font()
+
+    def __enter__(self):
+        self.created = False
+        return self
+
+    def __exit__(self, *args):
+        self.create()
+
+    @property
+    def root(self):
+        '''Used by downstream elements to reference EasyGUI as root'''
+        return self
+
+    def create(self, force_row=False) -> None:
+        '''Copied from EasyGUI.create'''
+        for name, section in self.sections.items():
+            section.create(force_row=force_row)
+        self.created = True
+
+    @recreate_if_needed
+    def add_widget(self, *args, **kwargs):
+        '''Copied from EasyGUI.add_widget'''
+        if '_default' not in self.sections:
+            self.add_section('_default')
+        return self.sections['_default'].add_widget(*args, **kwargs)
+
+
 
 class Section(tk.Frame, GridMaster, SectionMaster):
     '''
@@ -390,23 +439,22 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         Physically position this Section within its parent container.
         '''
         try:
-            if hasattr(self.parent, 'grid_areas'):
-                if self.parent.grid_areas != {} and self.grid_area and not force_row:
-                    try:
-                        if not hasattr(self.parent, 'tabbed') or not self.parent.tabbed:
-                            bounds = self.parent.grid_areas[self.grid_area]
-                            self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
-                        else:
-                            self.pack()
-                        if self.tabbed:
-                            self.tabs.pack()
-                        return  # early return if everything works fine with initial attempt (no other actions needed)
-                    except KeyError:
-                        if self.grid_area != self.name:  # basically, if user-specified grid_area (are same if programatically set grid_area)
-                            print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
-                self.parent.add_grid_row(self.name)
-                self.grid_area = self.name
-                self.parent.create()
+            if self.parent.grid_areas != {} and self.grid_area and not force_row:
+                try:
+                    if not hasattr(self.parent, 'tabbed') or not self.parent.tabbed:
+                        bounds = self.parent.grid_areas[self.grid_area]
+                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
+                    else:
+                        self.pack()
+                    if self.tabbed:
+                        self.tabs.pack()
+                    return  # early return if everything works fine with initial attempt (no other actions needed)
+                except KeyError:
+                    if self.grid_area != self.name:  # basically, if user-specified grid_area (are same if programatically set grid_area)
+                        print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
+            self.parent.add_grid_row(self.name)
+            self.grid_area = self.name
+            self.parent.create()
         except _tkinter.TclError:
             print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.\nAdding to a new row instead.')
             self.parent.create(force_row=True)  # go back and fully recreate section forcing all children to be packed/in new rows
@@ -449,7 +497,6 @@ class Section(tk.Frame, GridMaster, SectionMaster):
 
         old_widget.destroy()  # destroy after new widget is positioned for slightly less flickering
 
-
     @property
     def width(self) -> float:
         '''
@@ -463,6 +510,9 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         Estimate and return height desired by this Section.
         '''
         return float(sum(widget.height for widget in self.widgets.values()))
+
+    def __repr__(self) -> str:
+        return f'Section: "{self.name}"'
 
 
 

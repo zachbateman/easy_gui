@@ -26,7 +26,7 @@ class TestGUI(easy_gui.EasyGUI):
         tree.insert_row('Item B', ('...', '...'), parent_row=node1)
         tree.insert_row('Item C', ('...', '...'), parent_row=node2)
 
-        for i in range(50):
+        for i in range(5):
             tree.insert_row(f'Item {i}', ('', ''), parent_row=node2)
 
 
