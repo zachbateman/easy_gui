@@ -87,7 +87,7 @@ class GridMaster():
         self.configure_grid(self.grid_configuration)
 
     def grid_limits(self) -> dict:
-        min_row, max_row, min_col, max_col = 500, -500, 500, -500  # arbitrarly large starting points so no risk of surpising row/col not being captured
+        min_row, max_row, min_col, max_col = 500, -500, 500, -500  # arbitrarily large starting points so no risk of surprising row/col not being captured
         for area in self.grid_areas.values():
             if area['first_row'] < min_row:
                 min_row = area['first_row']
@@ -104,6 +104,7 @@ class GridMaster():
 class SectionMaster():
     def __init__(self):
         self.sections: dict = {}
+        self.widgets: dict = {}
 
     @recreate_if_needed
     def add_section(self, name='', title=False, grid_area=None,
@@ -135,6 +136,44 @@ class SectionMaster():
                                         borderwidth=borderwidth, relief=relief, tabbed=tabbed, equal_button_width=equal_button_width)
         self.sections[name] = section
         return section
+
+    @recreate_if_needed
+    def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **kwargs):
+        '''
+        Add a Widget object to this Section by calling the add_widget function in widgets.py
+        (Easier to keep the function there as it needs access to all the individual Widget classes.)
+        '''
+        return widgets.add_widget(self, type=type, text=text, widget_name=widget_name, grid_area=grid_area, **kwargs)
+
+    def delete_widget(self, widget_name) -> None:
+        '''
+        Fully delete a widget.
+        Pass without issue if the widget doesn't exist.
+        '''
+        try:
+            self.widgets[widget_name].destroy()
+            del self.widgets[widget_name]
+        except:
+            pass
+
+    def delete_all_widgets(self) -> None:
+        '''
+        Fully delete all child widgets of this section.
+        '''
+        for w_name in list(self.widgets.keys()):
+            self.delete_widget(w_name)
+
+    def _clear_and_recreate_plot(self, mpl_figure, widget_name, grid_area, kwargs):
+        old_widget = self.widgets[widget_name]  # grab reference to widget to be deleted so that its place in dict can be given to new widget
+
+        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, toolbar=old_widget.toolbar, grid_area=grid_area)
+        new_widget.bindings = old_widget.bindings
+        new_widget.small_figure_warning_given = old_widget.small_figure_warning_given
+        new_widget.position()
+        new_widget.draw_plot(mpl_figure=mpl_figure)
+        new_widget.position()  # have to reposition/create Widget
+
+        old_widget.destroy()  # destroy after new widget is positioned for slightly less flickering
 
     @recreate_if_needed
     def add_tab(self, name='', **kwargs):
@@ -285,8 +324,11 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         Positions GUI elements in window.
         May be called recursively by child Sections as elements are positioned.
         '''
-        for name, section in self.sections.items():
-            section.create(force_row=force_row)
+        for child in {**self.widgets, **self.sections}.values():
+            try:
+                child.create(force_row)  # if child is another Section object
+            except AttributeError:
+                child.position(force_row)  # if child is a Widget object
         self.created = True
 
     def add_menu(self,
@@ -308,15 +350,8 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 
         self.config(menu=self.menu)
 
-    @recreate_if_needed
-    def add_widget(self, *args, **kwargs):
-        '''
-        Same as Section.add_widget, but works if used on main GUI class without specifying a Section.
-        A Section named "_default" is created if needed and widgets are put within that section.
-        '''
-        if '_default' not in self.sections:
-            self.add_section('_default')
-        return self.sections['_default'].add_widget(*args, **kwargs)
+    def __repr__(self):
+        return 'Main EasyGUI Application'
 
     def popup(self):
         '''
@@ -382,6 +417,9 @@ class PopUp(tk.Toplevel, GridMaster, SectionMaster):
             self.add_section('_default')
         return self.sections['_default'].add_widget(*args, **kwargs)
 
+    def __repr__(self):
+        return 'EasyGUI PopUp Window'
+
 
 
 class Section(tk.Frame, GridMaster, SectionMaster):
@@ -412,7 +450,6 @@ class Section(tk.Frame, GridMaster, SectionMaster):
             self.tabs.style = self.style
             self.tabs.root = self.root
         self.equal_button_width = equal_button_width
-        self.widgets: dict = {}
         if title:  # title kwargs can be provided as True or a string
             if isinstance(title, str):  # if string, use title for label text
                 self.add_widget(type='label', text=title)
@@ -475,45 +512,6 @@ class Section(tk.Frame, GridMaster, SectionMaster):
         except _tkinter.TclError:
             print(f'\n--- GRID FAILED for Section: "{self.name}" ---\nTry ensuring "grid_area" arg is given for all Sections in a given parent.\nAdding to a new row instead.')
             self.parent.create(force_row=True)  # go back and fully recreate section forcing all children to be packed/in new rows
-
-    @recreate_if_needed
-    def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **kwargs):
-        '''
-        Add a Widget object to this Section by calling the add_widget function in widgets.py
-        (Easier to keep the function there as it needs access to all the individual Widget classes.)
-        '''
-        return widgets.add_widget(self, type=type, text=text, widget_name=widget_name, grid_area=grid_area, **kwargs)
-
-    def delete_widget(self, widget_name) -> None:
-        '''
-        Fully delete a widget.
-        Pass without issue if the widget doesn't exist.
-        '''
-        try:
-            self.widgets[widget_name].destroy()
-            del self.widgets[widget_name]
-        except:
-            pass
-
-    def delete_all_widgets(self) -> None:
-        '''
-        Fully delete all child widgets of this section.
-        '''
-        for w_name in list(self.widgets.keys()):
-            self.delete_widget(w_name)
-
-
-    def _clear_and_recreate_plot(self, mpl_figure, widget_name, grid_area, kwargs):
-        old_widget = self.widgets[widget_name]  # grab reference to widget to be deleted so that its place in dict can be given to new widget
-
-        new_widget = self.add_widget(type='matplotlib', widget_name=widget_name, toolbar=old_widget.toolbar, grid_area=grid_area)
-        new_widget.bindings = old_widget.bindings
-        new_widget.small_figure_warning_given = old_widget.small_figure_warning_given
-        new_widget.position()
-        new_widget.draw_plot(mpl_figure=mpl_figure)
-        new_widget.position()  # have to reposition/create Widget
-
-        old_widget.destroy()  # destroy after new widget is positioned for slightly less flickering
 
     @property
     def width(self) -> float:
