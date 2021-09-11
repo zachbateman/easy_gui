@@ -13,6 +13,13 @@ class TestGUI(EasyGUI):
         self.sections['test_section'].add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
         self.sections['test_section'].add_widget(type='label', text='Here\'s an awesome label!')
 
+        self.add_widget('btn', 'Popup Window', command_func=self.new_window)
+
+    def new_window(self, *args):
+        with self.popup() as popup:
+            popup.add_widget('lbl', 'This is a new window')
+            popup.add_widget('btn', 'Popup Button', command_func=lambda _: print('Popup Button'))
+
 
 
 class TestEasyGUI(unittest.TestCase):

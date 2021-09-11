@@ -338,6 +338,8 @@ class PopUp(tk.Toplevel, GridMaster, SectionMaster):
         super().__init__()
         GridMaster.__init__(self)
         SectionMaster.__init__(self)
+        self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
+        self.geometry("300x180+120+80")  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
         self.style = EasyGUI.style
         self.style.create_font()
 
@@ -352,6 +354,20 @@ class PopUp(tk.Toplevel, GridMaster, SectionMaster):
     def root(self):
         '''Used by downstream elements to reference EasyGUI as root'''
         return self
+
+    def icon(self, bitmap, default: bool=False) -> None:
+        '''
+        Alternate method to call tk.Tk iconbitmap method using altered path handling
+        so that PyInstaller can package application with specified .ico file.
+        If not default, warning message is printed on failing to locate .ico file.
+        '''
+        try:
+            super().iconbitmap(bitmap=resource_path(bitmap))
+        except _tkinter.TclError:
+            if default:
+                pass  # Pass silently if default .ico not found occurs when using PyInstaller and not adding transparent.ico to "datas"
+            else:
+                print(f'Cannot locate {bitmap}!  If using PyInstaller, be sure to specify this file in "datas".')
 
     def create(self, force_row=False) -> None:
         '''Copied from EasyGUI.create'''
