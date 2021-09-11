@@ -10,8 +10,8 @@ class BaseStyle():
     '''
     def __init__(self) -> None:
         self.transparent = False
-        self.window_color = '#DDE5EE'
-        self.section_color = '#DDE5EE'
+        self.window_color = '#DDE5EC'
+        self.section_color = '#DDE5EC'
         self.menu_color = 'lightgrey'
 
         # _font attr provides parameters used to modify Font generated and used (don't have to provide all - leave out for defaults)
