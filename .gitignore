@@ -10,3 +10,4 @@ easy_gui.egg-info/
 *venv*
 
 prof
+*.csv
