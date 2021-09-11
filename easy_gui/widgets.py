@@ -451,12 +451,11 @@ class Table(Widget):
     # Want to have capability to edit cells
     # Need copy/paste ability if enabled
     # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
-    def __init__(self, master=None, section=None, widget_name=None, type:str='label', rows:int=4, columns:int=3, **kwargs) -> None:
+    def __init__(self, master=None, widget_name=None, type:str='label', rows:int=4, columns:int=3, border: bool=False, **kwargs) -> None:
         '''
         type can be 'label' or 'entry'
         '''
         super().__init__(master=master, **kwargs)
-        self.section = section
         self.widget_name = widget_name
         self.type = type
         self.rows = rows
@@ -471,7 +470,7 @@ class Table(Widget):
         for row in range(1, rows+1):
             for col in range(1, columns+1):
                 if self.type == 'label':
-                    new_cell = Label(master=self)  # self is a tk.Frame
+                    new_cell = Label(master=self, borderwidth=(1 if border else 0), relief='solid')  # self is a tk.Frame
                     new_cell.set(f'Cell [{row}, {col}]')
                 elif self.type == 'entry':
                     new_cell = Entry(master=self)  # self is a tk.Frame
@@ -483,7 +482,7 @@ class Table(Widget):
 
     def grid_cells(self):
         for cell in self.cell_list:
-            cell._widget.grid(row=cell.row-1, column=cell.column-1)
+            cell._widget.grid(row=cell.row-1, column=cell.column-1, sticky='NSEW')
 
     def __getitem__(self, indices):
         row, column = indices
