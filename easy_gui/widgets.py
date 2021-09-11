@@ -179,11 +179,14 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
 
 
 class Button(Widget):
-    def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
+    def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, use_ttk: bool=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
         del kwargs['grid_area']
-        self._widget = tk.Button(master=master, text=text, highlightbackground=self.style.button_color, font=self.style.font, **kwargs)
+        if not use_ttk:
+            self._widget = tk.Button(master=master, text=text, highlightbackground=self.style.button_color, font=self.style.font, **kwargs)
+        else:
+            self._widget = ttk.Button(master=master, text=text, **kwargs)
         self.bind_click(command_func, separate_thread)
 
     def place(self) -> None:
@@ -314,6 +317,19 @@ class CheckBox(Widget):
     def get(self) -> bool:
         return True if 'selected' in self._widget.state() else False
 
+    def switch(self):
+        self._widget.invoke()
+
+    def check(self):
+        if not self.get():
+            self.switch()
+
+    def uncheck(self):
+        if self.get():
+            self.switch()
+
+
+
 
 class DropDown(Widget):
     def __init__(self, master=None, dropdown_options=[], **kwargs) -> None:
@@ -373,6 +389,10 @@ class Tree(Widget):
     @property
     def current_row(self) -> dict:
         return self._widget.item(self._widget.focus())
+
+    def select_first_row(self):
+        self._widget.focus(self._widget.get_children()[0])
+        self._widget.selection_set(self._widget.get_children()[0])
 
     def insert_column(self, column_name, width=120, minwidth=40, stretch=tk.YES) -> None:
         '''
