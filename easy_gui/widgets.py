@@ -13,9 +13,9 @@ from typing import List
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.figure import Figure
 from contextlib import nullcontext
-
+import datetime
+import calendar
 
 
 
@@ -59,6 +59,9 @@ class Widget(tk.Frame):
                     elif isinstance(self, Table):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                         self.grid_cells()
+                    elif isinstance(self, DatePicker):
+                        self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
+                        self.grid_interior()
                     else:
                         self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                     return  # early return if everything works fine with initial attempt (no other actions needed)
@@ -171,6 +174,9 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower in ['progress', 'progressbar']:
             new_widget = ProgressBar(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('progressbar')] = new_widget
+        elif type_lower in ['date', 'datepicker']:
+            new_widget = DatePicker(master=self, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('datepicker')] = new_widget
         else:
             raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
 
@@ -182,7 +188,8 @@ class Button(Widget):
     def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, use_ttk: bool=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
-        del kwargs['grid_area']
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
         if not use_ttk:
             self._widget = tk.Button(master=master, text=text, highlightbackground=self.style.button_color, font=self.style.font, **kwargs)
         else:
@@ -329,8 +336,6 @@ class CheckBox(Widget):
             self.switch()
 
 
-
-
 class DropDown(Widget):
     def __init__(self, master=None, dropdown_options=[], **kwargs) -> None:
         super().__init__(master=master, **kwargs)
@@ -371,6 +376,56 @@ class ListBox(Widget):
 
     def get(self) -> List[str]:
         return sorted(self._widget.get(i) for i in self._widget.curselection())
+
+
+class Table(Widget):
+    # TODO:
+    # Need copy/paste ability if enabled
+    # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
+    def __init__(self, master=None, widget_name=None, type:str='label', rows:int=4, columns:int=3, border: bool=False, **kwargs) -> None:
+        '''
+        type can be 'label' or 'entry'
+        '''
+        super().__init__(master=master, **kwargs)
+        self.widget_name = widget_name
+        self.type = type
+        self.rows = rows
+        self.column = columns
+        self.grid_area = kwargs.get('grid_area')
+        self.kwargs = kwargs
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
+
+        self.cells = {row: {col: None for col in range(1, columns+1)} for row in range(1, rows+1)}
+        self.cell_list = []  # another reference to the same cell objects in list form for easier access in some cases
+        for row in range(1, rows+1):
+            for col in range(1, columns+1):
+                if self.type == 'label':
+                    new_cell = Label(master=self, borderwidth=(1 if border else 0), relief='solid')  # self is a tk.Frame
+                    new_cell.set(f'Cell [{row}, {col}]')
+                elif self.type == 'entry':
+                    new_cell = Entry(master=self)  # self is a tk.Frame
+                new_cell.row = row
+                new_cell.column = col
+                self.cells[row][col] = new_cell
+                self.cell_list.append(new_cell)
+
+
+    def grid_cells(self):
+        for cell in self.cell_list:
+            cell._widget.grid(row=cell.row-1, column=cell.column-1, sticky='NSEW')
+
+    def __getitem__(self, indices):
+        row, column = indices
+        return self.cells[row][column].get()
+
+    def __setitem__(self, indices, value):
+        row, column = indices
+        self.cells[row][column].set(value)
+
+    def destroy(self):
+        for cell in self.cell_list:
+            cell.destroy()
 
 
 class Tree(Widget):
@@ -445,57 +500,6 @@ class Tree(Widget):
             self._widget.focus_set()  # want to refocus/keep focus on tree if lost it during command_func
 
         self.bind_event('<<TreeviewSelect>>', command_func_with_tree_reselect, separate_thread=separate_thread)
-
-
-class Table(Widget):
-    # Want to have capability to edit cells
-    # Need copy/paste ability if enabled
-    # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
-    def __init__(self, master=None, widget_name=None, type:str='label', rows:int=4, columns:int=3, border: bool=False, **kwargs) -> None:
-        '''
-        type can be 'label' or 'entry'
-        '''
-        super().__init__(master=master, **kwargs)
-        self.widget_name = widget_name
-        self.type = type
-        self.rows = rows
-        self.column = columns
-        self.grid_area = kwargs.get('grid_area')
-        self.kwargs = kwargs
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
-
-        self.cells = {row: {col: None for col in range(1, columns+1)} for row in range(1, rows+1)}
-        self.cell_list = []  # another reference to the same cell objects in list form for easier access in some cases
-        for row in range(1, rows+1):
-            for col in range(1, columns+1):
-                if self.type == 'label':
-                    new_cell = Label(master=self, borderwidth=(1 if border else 0), relief='solid')  # self is a tk.Frame
-                    new_cell.set(f'Cell [{row}, {col}]')
-                elif self.type == 'entry':
-                    new_cell = Entry(master=self)  # self is a tk.Frame
-                new_cell.row = row
-                new_cell.column = col
-                self.cells[row][col] = new_cell
-                self.cell_list.append(new_cell)
-
-
-    def grid_cells(self):
-        for cell in self.cell_list:
-            cell._widget.grid(row=cell.row-1, column=cell.column-1, sticky='NSEW')
-
-    def __getitem__(self, indices):
-        row, column = indices
-        return self.cells[row][column].get()
-
-    def __setitem__(self, indices, value):
-        row, column = indices
-        self.cells[row][column].set(value)
-
-    def destroy(self):
-        for cell in self.cell_list:
-            cell.destroy()
-
 
 
 class MatplotlibPlot(Widget):
@@ -619,5 +623,103 @@ class DatePicker(Widget):
     '''
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
+        self._widget = self
+        self.grid_area = kwargs.get('grid_area')
+        self.kwargs = kwargs
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
 
-        # TODO: Make this widget...
+        self.selected_day = None
+        self.selected_month = 9
+        self.selected_year = 2021
+
+        self.previous_month_btn = Button(master=self, text='<')
+        self.previous_month_btn.bind_click(self.previous_month)
+        self.current_month_year = Label(master=self)
+        self.update_month_year()
+        self.next_month_btn = Button(master=self, text='>')
+        self.next_month_btn.bind_click(self.next_month)
+
+        self.day_labels = []
+        first_day, days_in_month = calendar.monthrange(self.selected_year, self.selected_month)
+        self.build_days(days_in_month)
+
+
+    def build_days(self, max_day):
+        '''Handle creating labels (toggles/buttons) for each day in the month.'''
+        if self.day_labels:
+            for lbl in self.day_labels:
+                lbl.destroy()
+            self.day_labels = []
+
+        for day_count in range(1, max_day+1):
+            day_lbl = Label(master=self, text=day_count, borderwidth=1, relief='raised')  # self is a tk.Frame
+            self.day_labels.append(day_lbl)
+
+        # Not totally sure why below shenanigans is needed...
+        # But had trouble with last day getting reference for all day clicks.
+        def config_func(label):
+            def func(*args):
+                for lbl in self.day_labels:
+                    lbl.config(bg=self.style.widget_bg_color)
+                label.config(bg='#99BBFF')
+                self.selected_day = int(label.get())
+            return func
+        for label in self.day_labels:
+            label.bind_click(config_func(label))
+
+    def get(self) -> datetime.date:
+        try:
+            return datetime.date(self.selected_year, self.selected_month, self.selected_day)
+        except:
+            return None
+
+    def previous_month(self, *args):
+        if self.selected_month == 1:
+            self.selected_month = 12
+            self.selected_year -= 1
+        else:
+            self.selected_month -= 1
+        self.update_month_year()
+        self.grid_interior()
+
+    def next_month(self, *args):
+        if self.selected_month == 12:
+            self.selected_month = 1
+            self.selected_year += 1
+        else:
+            self.selected_month += 1
+        self.update_month_year()
+        self.grid_interior()
+
+    def update_month_year(self):
+        mo_from_int = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+        self.current_month_year.set(f'{mo_from_int[self.selected_month]} {self.selected_year}')
+
+    def grid_interior(self):
+        first_day, days_in_month = calendar.monthrange(self.selected_year, self.selected_month)
+        self.build_days(days_in_month)
+
+        self.previous_month_btn._widget.grid(row=1, column=1)
+        self.current_month_year._widget.grid(row=1, column=2, columnspan=5)
+        self.next_month_btn._widget.grid(row=1, column=7)
+
+        for i, day_of_week in enumerate(('S', 'M', 'T', 'W', 'T', 'F', 'S')):
+            lbl = Label(master=self, text=day_of_week)
+            lbl._widget.grid(row=2, column=i+1)
+
+        # day_count adjusted so week is Sunday-> Saturday and moves day 1 to correct column
+        day_count = -first_day - 1 if first_day != 6 else 0
+        for row in range(1, 7):
+            for col in range(1, 8):
+                try:
+                    if day_count >= 0:
+                        day_lbl = self.day_labels[day_count]
+                        day_lbl._widget.grid(row=row+2, column=col, stick='NSEW')
+                except IndexError:
+                    pass
+                day_count += 1
+
+    def destroy(self):
+        for lbl in self.day_labels:
+            lbl.destroy()

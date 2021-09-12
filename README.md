@@ -1,6 +1,6 @@
 # easy_gui
 
-easy_gui is a high-level Python library designed to simplify the process of creating GUI applications by wrapping tkinter.  Solving problems is tricky enough... using our solutions should be easy!
+easy_gui is a high-level Python library designed to simplify the process of creating GUI applications by wrapping tkinter.  Solving problems is tricky enough... using our solutions should be EASY!
 
 # Quickstart
 
@@ -55,13 +55,14 @@ easy_gui is a high-level Python library designed to simplify the process of crea
   <img src="examples/simple_gui.png" width="425px">
 
 
-# Current Features
+# Features
 
-  - Quickly and easily build a GUI by subclassing easy_gui.EasyGUI.
-  - Create one or more Sections (including nested Sections) to organize GUI elements.
-  - Add easy_gui Widget objects to Sections:
-    - Button, Label, Entry, CheckBox, DropDown, ListBox, Table, Tree, MatplotlibPlot, ProgressBar, ScrolledText, StdOutBox
-  - CSS Grid-style layouts.
+  - Quickly and easily build a GUI by subclassing easy_gui.EasyGUI
+  - Add easy_gui Widget objects:
+    - Button, Label, Entry, LabelEntry, CheckBox, DropDown, ListBox, Table, Tree, MatplotlibPlot, ProgressBar, ScrolledText, StdOutBox, DatePicker
+  - Create one or more Sections (including nested Sections) to help organize GUI elements
+  - CSS Grid-style layouts
+  - Simply create a popup window using EasyGUI.popup()
   - Easily use multithreading for GUI responsiveness (set "separate_thread=True" when creating a Button Widget)
 
 
