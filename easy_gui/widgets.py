@@ -451,6 +451,10 @@ class Tree(Widget):
     def current_row(self) -> dict:
         return self._widget.item(self._widget.focus())
 
+    @property
+    def current_rows(self) -> List[dict]:
+        return [self._widget.item(id) for id in self._widget.selection()]
+
     def select_first_row(self):
         self._widget.focus(self._widget.get_children()[0])
         self._widget.selection_set(self._widget.get_children()[0])

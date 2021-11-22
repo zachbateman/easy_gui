@@ -36,11 +36,10 @@ class TestGUI(easy_gui.EasyGUI):
 
         self.plot_section = self.add_section('plot')
         self.plot = self.plot_section.add_widget(type='matplotlib')
-        
+
         self.plot.bind_select(self.show_popup) #, separate_thread=True)
-        # breakpoint()
         pp(self.sections)
-    
+
 
     def plot_current(self, *args):
         x = list(range(1, 11))
@@ -53,7 +52,10 @@ class TestGUI(easy_gui.EasyGUI):
         ax = fig.add_subplot(111)
         ax.scatter(x, y)
         self.plot.draw_plot(mpl_figure=fig)
-        
+        print()
+        print(self.tree.current_row)
+        print(self.tree.current_rows)
+
     def show_popup(self, *args):
         with self.popup() as popup:
             popup.add_widget('lbl', 'Test Label')
@@ -65,11 +67,11 @@ class TestGUI(easy_gui.EasyGUI):
             popup.add_widget('checkbox', 'Checkbox')
             popup.add_widget('labelentry', 'Label Entry')
             popup.add_widget('listbox')
-            
+
             sec = popup.add_section('sec')
             sec.add_widget('btn', 'Test Button 2', command_func=lambda *args: sec.add_widget('lbl', 'ADDED'))
             sec.add_widget('lbl', 'Label in Section...')
-            
+
             plot = popup.add_widget('matplotlibplot')
             x = list(range(1, 11))
             y = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
