@@ -185,15 +185,21 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
 
 
 class Button(Widget):
-    def __init__(self, master=None, text='button', command_func=lambda x: None, separate_thread=False, use_ttk: bool=False, **kwargs) -> None:
+    def __init__(self, master=None, text='button', image=None, command_func=lambda x: None, separate_thread=False, use_ttk: bool=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
+        self.image = None
+        if image:
+            if image[-4:].lower() != '.png':
+                print('Error!  Can only use a ".png" file as a button image.')
+            else:
+                self.image = tk.PhotoImage(file=image)
         if 'grid_area' in kwargs:
             del kwargs['grid_area']
         if not use_ttk:
-            self._widget = tk.Button(master=master, text=text, highlightbackground=self.style.button_color, font=self.style.font, **kwargs)
+            self._widget = tk.Button(master=master, text=text, image=self.image, highlightbackground=self.style.button_color, font=self.style.font, **kwargs)
         else:
-            self._widget = ttk.Button(master=master, text=text, **kwargs)
+            self._widget = ttk.Button(master=master, text=text, image=self.image, **kwargs)
         self.bind_click(command_func, separate_thread)
 
     def place(self) -> None:

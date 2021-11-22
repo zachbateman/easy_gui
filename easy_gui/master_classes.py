@@ -483,9 +483,10 @@ class Section(tk.Frame, GridMaster, SectionMaster):
     def match_child_button_widths(self):
         child_buttons = [child for child in self.widgets.values() if isinstance(child, widgets.Button)]
         if len(child_buttons) > 1:
-            max_width = int(round(max(child.width / 7.0 for child in child_buttons)))
+            max_width = int(round(max(child.width / 7.0 for child in child_buttons if not child.image)))
             for child in child_buttons:
-                child.config(width=max_width)
+                if not child.image:
+                    child.config(width=max_width)
 
     def position(self, force_row: bool=False) -> None:
         '''
