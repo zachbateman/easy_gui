@@ -171,6 +171,9 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower == 'scrolledtext':
             new_widget = ScrolledText(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('scrolledtext')] = new_widget
+        elif type_lower == 'slider':
+            new_widget = Slider(master=self, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('slider')] = new_widget
         elif type_lower in ['progress', 'progressbar']:
             new_widget = ProgressBar(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('progressbar')] = new_widget
@@ -510,6 +513,24 @@ class Tree(Widget):
             self._widget.focus_set()  # want to refocus/keep focus on tree if lost it during command_func
 
         self.bind_event('<<TreeviewSelect>>', command_func_with_tree_reselect, separate_thread=separate_thread)
+
+
+class Slider(Widget):
+    def __init__(self, master=None, min=0, max=100, start=None, resolution=5, tickinterval=25, length=10, hz_or_vt='vt',
+                      command_func=None, **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        del kwargs['grid_area']
+        orient = 'horizontal' if hz_or_vt.lower() == 'hz' else 'vertical'
+        self._widget = tk.Scale(master, from_=min, to=max, resolution=resolution, tickinterval=tickinterval, orient=orient,
+                                        length=length, command=command_func, **kwargs)
+        if start:
+            self.set(start)
+
+    def get(self):
+        return self._widget.get()
+
+    def set(self, value):
+        self._widget.set(value)
 
 
 class MatplotlibPlot(Widget):
