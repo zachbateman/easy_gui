@@ -141,6 +141,9 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower in ['button', 'btn']:
             new_widget = Button(master=self, text=text, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('button')] = new_widget
+        elif type_lower in ['canvas']:
+            new_widget = Canvas(master=self, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('canvas')] = new_widget
         elif type_lower in ['entry', 'input']:
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
@@ -227,6 +230,21 @@ class Button(Widget):
         Overwrites Widget method.
         '''
         return 39
+
+
+class Canvas(Widget):
+    def __init__(self, master=None, width=300, height=250, background='gray85', **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        if 'grid_area' in kwargs:
+            del kwargs['grid_area']
+        self._widget = tk.Canvas(master=master, width=width, height=height, background=background, **kwargs)
+
+    def create_line(self, x1, y1, x2, y2, fill='blue', width=3):
+        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width)
+
+    def create_text(self, x, y, text='Text', anchor='nw', fill='black'):
+        self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill)
+
 
 
 class Label(Widget):
