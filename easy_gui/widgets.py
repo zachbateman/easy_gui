@@ -239,11 +239,15 @@ class Canvas(Widget):
             del kwargs['grid_area']
         self._widget = tk.Canvas(master=master, width=width, height=height, background=background, **kwargs)
 
-    def create_line(self, x1, y1, x2, y2, fill='blue', width=3):
-        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width)
+    def itemconfigure(self, *args, **kwargs) -> None:
+        '''See tkinter.Canvas.itemconfigure... Used to change tagged items.'''
+        self._widget.itemconfigure(*args, **kwargs)
 
-    def create_text(self, x, y, text='Text', anchor='nw', fill='black'):
-        self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill)
+    def create_line(self, x1, y1, x2, y2, fill='blue', width=3, tags=None):
+        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=tags)
+
+    def create_text(self, x, y, text='Text', anchor='nw', fill='black', tags=None):
+        self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=tags)
 
 
 
