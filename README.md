@@ -11,6 +11,7 @@ easy_gui is a high-level Python library designed to simplify the process of crea
   - Create one or more Sections (including nested Sections) to help organize GUI elements
   - CSS Grid-style layouts
   - Simply create a popup window using EasyGUI.popup()
+  - Simply create popup tooltips for widgets using Widget.add_tooltip()
   - Multithreading for GUI responsiveness (set "separate_thread=True" when creating a Button Widget)
   - Easy to install with few dependancies - just matplotlib (but you want to make plots anyway, right?!)
 
