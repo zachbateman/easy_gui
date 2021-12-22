@@ -100,6 +100,42 @@ class Widget(tk.Frame):
         else:
             self._widget.bind(event, command_func, add='+')
 
+    def add_tooltip(self, text: str, delay: float=1.0):
+        '''
+        Add a tooltip that shows up when mouse is over Widget.
+        "delay" arg is number of seconds to delay showing the tooltip after mouse enters the Widget.
+
+        Code here is messy from using/saving state between functions... but it works for now.
+        '''
+        self.tooltip = None
+
+        def leave(*args):
+            if self.tooltip:
+                self.tooltip.destroy()
+            self.tooltip = None
+
+        def show_tooltip(*args):
+            leave()  # close previous tooltip if somehow exists
+            if self.last_event != '<Leave>':
+                abs_coord_x = self.root.winfo_pointerx()
+                abs_coord_y = self.root.winfo_pointery()
+
+                with self.root.popup(tooltip=True, width=int(6.2*len(text))+15, height=30, x=abs_coord_x+0, y=abs_coord_y+0) as tooltip:
+                    sec = tooltip.add_section()
+                    sec.configure(bg=self.style.tooltip_color)
+                    sec.configure(relief='raised')
+                    label = sec.add_widget('label', text)
+                    label._widget.configure(bg=self.style.tooltip_color)
+                    self.tooltip = tooltip
+
+        def save_last_event(event):
+            self.last_event = event
+
+        self.bind_event('<Enter>', lambda _: self._widget.after(int(delay * 1000), show_tooltip))
+        self.bind_event('<Enter>', lambda _: save_last_event('<Enter>'))
+        self.bind_event('<Leave>', leave)
+        self.bind_event('<Leave>', lambda _: save_last_event('<Leave>'))
+
     def destroy(self):
         self._widget.destroy()
 

@@ -33,6 +33,8 @@ class BaseStyle():
         self.widget_bg_color = self.section_color
         self.button_color = '#8AC'
 
+        self.tooltip_color = '#FFFEDD'
+
 
     def create_font(self):
         '''
