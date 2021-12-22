@@ -10,12 +10,15 @@ class GUI(easy_gui.EasyGUI):
         sec = self.add_section('test_section', equal_button_width=True)
         btn1 = sec.add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
         btn1.add_tooltip('Here is a reeeeaaaalllyyyyyyy LONGGGGGG tooltip.  The text just keeps on going!!!  And GOIINNNGGG!!!!!', delay=2)
-        
+
         self.test_lbl = sec.add_widget(type='label', text='Here\'s an awesome label!')
         self.test_lbl.add_tooltip('This is a standard label')
-        
+
         btn2 = sec.add_widget('btn', 'Update Label', command_func=self.update_lbl)
-        btn2.add_tooltip('This button will update the above Label text.')
+        btn2.add_tooltip('This button will update the\nabove Label text.')
+
+        lbl2 = sec.add_widget('lbl', 'Many line tooltip')
+        lbl2.add_tooltip('This is a tooltip\nwith many lines\nto test\nand see if all the height and width calculations work well.\n\nIt looks decent here!')
 
 
     def update_lbl(self, *args):

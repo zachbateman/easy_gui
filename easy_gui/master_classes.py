@@ -369,7 +369,7 @@ class PopUp(tk.Toplevel, GridMaster, SectionMaster):
     Basically a mini EasyGUI class that inherits from tk.Toplevel instead of tk.Tk.
     Re-implements basic methods of EasyGUI class so widgets can be added.
     '''
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, width: int=300, height: int=180, x: int=120, y: int=80, **kwargs):
         if kwargs.get('tooltip', False):
             super().__init__()
             GridMaster.__init__(self)
@@ -377,7 +377,7 @@ class PopUp(tk.Toplevel, GridMaster, SectionMaster):
             self.wm_attributes('-disabled', True)  # disables window interaction for click pass through
             self.wm_overrideredirect(True)  # removes window
             self.wm_attributes('-alpha', 0.8)
-            self.geometry(f'{kwargs["width"]}x{kwargs["height"]}+{kwargs["x"]+20}+{kwargs["y"]+10}')  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
+            self.geometry(f'{width}x{height}+{x}+{y}')  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
             self.style = EasyGUI.style
             self.style.create_font()
             self.configure(bg=self.style.tooltip_color)
@@ -386,7 +386,7 @@ class PopUp(tk.Toplevel, GridMaster, SectionMaster):
             GridMaster.__init__(self)
             SectionMaster.__init__(self)
             self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
-            self.geometry("300x180+120+80")  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
+            self.geometry(f'{width}x{height}+{x}+{y}')  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
             self.style = EasyGUI.style
             self.style.create_font()
 

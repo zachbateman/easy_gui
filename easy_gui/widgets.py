@@ -116,11 +116,12 @@ class Widget(tk.Frame):
 
         def show_tooltip(*args):
             leave()  # close previous tooltip if somehow exists
-            if self.last_event != '<Leave>':
+            if self.last_event != '<Leave>':  # this checks to ensure that mouse hasn't left widget in time between <Enter> and the specified delay
                 abs_coord_x = self.root.winfo_pointerx()
                 abs_coord_y = self.root.winfo_pointery()
 
-                with self.root.popup(tooltip=True, width=int(6.2*len(text))+15, height=30, x=abs_coord_x+0, y=abs_coord_y+0) as tooltip:
+                max_line_length = max(len(sub_text) for sub_text in text.split('\n'))
+                with self.root.popup(tooltip=True, width=int(6.2*max_line_length)+15, height=18 * (text.count('\n')+1) + 12, x=abs_coord_x+20, y=abs_coord_y+10) as tooltip:
                     sec = tooltip.add_section()
                     sec.configure(bg=self.style.tooltip_color)
                     sec.configure(relief='raised')
