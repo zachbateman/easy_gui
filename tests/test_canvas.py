@@ -11,7 +11,7 @@ class GUI(easy_gui.EasyGUI):
         self.geometry('400x340')
 
         canvas = self.add_widget('canvas')
-        canvas.create_line(20, 20, 50, 100)
+        canvas.create_line(20, 20, 50, 100, tags='1234')
         canvas.create_line(30, 20, 70, 110, tags='line2')
         canvas.itemconfigure('line2', fill=colors.pop())
         canvas.create_text(50, 10, 'Test Text')
@@ -20,6 +20,7 @@ class GUI(easy_gui.EasyGUI):
         self.add_widget('btn', 'Change Line Color', command_func=self.change_line_color)
 
     def change_line_color(self, *args):
+        self.canvas.itemconfigure('1234', fill=colors.pop())
         self.canvas.itemconfigure('line2', fill=colors.pop())
 
 

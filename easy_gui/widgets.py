@@ -276,15 +276,24 @@ class Canvas(Widget):
             del kwargs['grid_area']
         self._widget = tk.Canvas(master=master, width=width, height=height, background=background, **kwargs)
 
-    def itemconfigure(self, *args, **kwargs) -> None:
+    def _clean_tag(self, tag):
+        '''
+        Canvas gets upset with a tag that is a string of all digits/integerish.
+        This simply puts an underscore at the beginning if needed to fix that.
+        '''
+        if isinstance(tag, str) and tag and all(s.isdigit() for s in tag):
+            tag = '_' + tag
+        return tag
+
+    def itemconfigure(self, tag, *args, **kwargs) -> None:
         '''See tkinter.Canvas.itemconfigure... Used to change tagged items.'''
-        self._widget.itemconfigure(*args, **kwargs)
+        self._widget.itemconfigure(self._clean_tag(tag), *args, **kwargs)
 
     def create_line(self, x1, y1, x2, y2, fill='blue', width=3, tags=None):
-        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=tags)
+        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=self._clean_tag(tags))
 
     def create_text(self, x, y, text='Text', anchor='nw', fill='black', tags=None):
-        self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=tags)
+        self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=self._clean_tag(tags))
 
 
 
