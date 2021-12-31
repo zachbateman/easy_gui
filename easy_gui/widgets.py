@@ -289,11 +289,32 @@ class Canvas(Widget):
         '''See tkinter.Canvas.itemconfigure... Used to change tagged items.'''
         self._widget.itemconfigure(self._clean_tag(tag), *args, **kwargs)
 
-    def create_line(self, x1, y1, x2, y2, fill='blue', width=3, tags=None):
-        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=self._clean_tag(tags))
+    def bind_click(self, tag, command_func, separate_thread: bool=False) -> None:
+        if separate_thread:
+            def threaded_command_func(*args):
+                threading.Thread(target=command_func).start()
+            self._widget.tag_bind(self._clean_tag(tag), '<Button-1>', threaded_command_func, add='+')
+        else:
+            self._widget.tag_bind(self._clean_tag(tag), '<Button-1>', command_func, add='+')
 
     def create_text(self, x, y, text='Text', anchor='nw', fill='black', tags=None):
         self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=self._clean_tag(tags))
+
+    def create_line(self, x1, y1, x2, y2, fill='blue', width=3, tags=None):
+        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=self._clean_tag(tags))
+
+    def create_rectangle(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None):
+        self._widget.create_rectangle(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+
+    def create_oval(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None):
+        self._widget.create_oval(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+
+    def create_circle(self, x, y, radius=5, fill='green', outline='blue', width=3, tags=None):
+        self.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill, outline=outline, width=width, tags=tags)
+
+    def create_polygon(self, *args, fill='green', outline='blue', width=3, tags=None):
+        self._widget.create_polygon(*args, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+
 
 
 
