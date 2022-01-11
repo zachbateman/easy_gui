@@ -32,6 +32,7 @@ class BaseStyle():
 
         self.widget_bg_color = self.section_color
         self.button_color = '#8AC'
+        self.button_hover_color = '#9BD'
 
         self.tooltip_color = '#FFFEDD'
 

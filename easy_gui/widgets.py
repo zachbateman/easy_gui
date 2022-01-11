@@ -52,6 +52,8 @@ class Widget(tk.Frame):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
                         self._widget.pack(side='left', fill=tk.BOTH, expand=True)
                         self.scrollbar.pack(side='left', fill='y')
+                    elif isinstance(self, CanvasButton):
+                        self._widget._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
                     elif isinstance(self, LabelEntry):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
                         self._lbl_widget.pack(side='left', expand=True)
@@ -181,6 +183,9 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
         elif type_lower in ['canvas']:
             new_widget = Canvas(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('canvas')] = new_widget
+        elif type_lower in ['canvasbutton']:
+            new_widget = CanvasButton(master=self, text=text, grid_area=grid_area, **kwargs)
+            self.widgets[new_widget_name('canvasbutton')] = new_widget
         elif type_lower in ['entry', 'input']:
             new_widget = Entry(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('entry')] = new_widget
@@ -269,6 +274,43 @@ class Button(Widget):
         return 39
 
 
+class CanvasButton(Widget):
+    def __init__(self, master=None, text: str='button', form: str='rounded', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
+        super().__init__(master=master, **kwargs)
+        self.text = text
+
+        width = 120
+        height = 40
+        self._widget = Canvas(master=master, width=width, height=height, background=self.style.section_color, highlightthickness=0)
+
+        polygon = lambda dist: [(0, dist), (dist, 0), (width-dist, 0), (width, dist), (width, height-dist), (width-dist, height), (dist, height), (0, height-dist)]
+
+        if form == 'rounded':
+            self._widget.create_polygon(polygon(12), fill=self.style.button_color, outline=self.style.button_color, tags='button')
+            self._widget.create_arc(0, 0, 20, 20, start=90, extent=90, fill=self.style.button_color, outline=self.style.button_color, tags='button')
+            self._widget.create_arc(width-20, 0, width, 20, start=0, extent=90, fill=self.style.button_color, outline=self.style.button_color, tags='button')
+            self._widget.create_arc(width-20, height-20, width, height, start=270, extent=90, fill=self.style.button_color, outline=self.style.button_color, tags='button')
+            self._widget.create_arc(0, height-20, 20, height, start=180, extent=90, fill=self.style.button_color, outline=self.style.button_color, tags='button')
+            print('rounded CanvasButton generated')
+        elif form == 'angular':
+            self._widget.create_polygon(polygon(12), fill=self.style.button_color, outline=self.style.button_color, tags='button')
+
+        self._widget.create_text(width/2, height/2, text=text, anchor='center', fill='black', tags='button_text')
+
+        self._widget.bind_click('button', command_func, separate_thread)
+        self._widget.bind_click('button_text', command_func, separate_thread)
+        self._widget.bind_event('<Enter>', self.on_enter)
+        self._widget.bind_event('<Leave>', self.on_leave)
+
+    def on_enter(self, *args):
+        self._widget.itemconfigure('button', fill=self.style.button_hover_color)
+        self._widget.itemconfigure('button', outline=self.style.button_hover_color)
+
+    def on_leave(self, *args):
+        self._widget.itemconfigure('button', fill=self.style.button_color)
+        self._widget.itemconfigure('button', outline=self.style.button_color)
+
+
 class Canvas(Widget):
     def __init__(self, master=None, width=300, height=250, background='gray85', **kwargs) -> None:
         super().__init__(master=master, **kwargs)
@@ -306,15 +348,17 @@ class Canvas(Widget):
     def create_rectangle(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None):
         self._widget.create_rectangle(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
 
+    def create_polygon(self, *args, fill='green', outline='blue', width=3, tags=None):
+        self._widget.create_polygon(*args, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+
     def create_oval(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None):
         self._widget.create_oval(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
 
     def create_circle(self, x, y, radius=5, fill='green', outline='blue', width=3, tags=None):
         self.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill, outline=outline, width=width, tags=tags)
 
-    def create_polygon(self, *args, fill='green', outline='blue', width=3, tags=None):
-        self._widget.create_polygon(*args, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
-
+    def create_arc(self, x0, y0, x1, y1, start=0, extent=100, fill='green', outline='blue', tags=None):
+        self._widget.create_arc(x0, y0, x1, y1, start=start, extent=extent, fill=fill, outline=outline, tags=tags)
 
 
 

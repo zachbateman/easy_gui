@@ -8,7 +8,7 @@ colors = [color for _ in range(100) for color in ['red', 'green', 'purple']]
 
 class GUI(easy_gui.EasyGUI):
     def __init__(self):
-        self.geometry('400x340')
+        self.geometry('500x550')
 
         canvas = self.add_widget('canvas')
         self.canvas = canvas
@@ -28,7 +28,14 @@ class GUI(easy_gui.EasyGUI):
         canvas.create_polygon(180, 80, 230, 100, 250, 150, tags='triangle')
         canvas.bind_click('triangle', self.change_triangle_color)
 
+        canvas.create_arc(100, 150, 200, 250, start=0, extent=60, tags='arc')
+        canvas.bind_click('arc', lambda _: print(' - Arc Clicked -'))
+
         self.add_widget('btn', 'Change Line Color', command_func=self.change_line_color)
+
+        self.add_widget('canvasbutton', text='Canvas Button', form='rounded', command_func=lambda _: print(' - CanvasButton Clicked -'))
+        self.add_widget('canvasbutton', text='Canvas Button', form='angular', command_func=lambda _: print(' - CanvasButton Clicked -'))
+
 
     def change_line_color(self, *args):
         self.canvas.itemconfigure('1234', fill=colors.pop())

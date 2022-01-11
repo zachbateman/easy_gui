@@ -7,7 +7,7 @@ easy_gui is a high-level Python library designed to simplify the process of crea
 
   - Quickly and easily build a GUI by subclassing easy_gui.EasyGUI
   - Add easy_gui Widget objects (check out widgets.py for details on each):
-    - Button, Label, Entry, LabelEntry, CheckBox, DropDown, ListBox, Table, Tree, Slider, MatplotlibPlot, Canvas, ProgressBar, ScrolledText, StdOutBox, DatePicker
+    - Button, CanvasButton, Label, Entry, LabelEntry, CheckBox, DropDown, ListBox, Table, Tree, Slider, MatplotlibPlot, Canvas, ProgressBar, ScrolledText, StdOutBox, DatePicker
   - Create one or more Sections (including nested Sections) to help organize GUI elements
   - CSS Grid-style layouts
   - Simply create a popup window using EasyGUI.popup()
