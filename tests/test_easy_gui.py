@@ -10,6 +10,7 @@ class GUI(easy_gui.EasyGUI):
         sec = self.add_section('test_section', equal_button_width=True)
         sec.add_widget(type='button', text='Button1', command_func=lambda e: print('Button1 working!'))
         self.test_lbl = sec.add_widget(type='label', text='Here\'s an awesome label!')
+        self.test_lbl2 = sec.add_widget(type='label', text='Here\'s an awesome COPYABLE label!', copyable=True)
         sec.add_widget('btn', 'Update Label', command_func=self.update_lbl)
 
         self.lblentry = sec.add_widget('labelentry', text='LabelEntry')

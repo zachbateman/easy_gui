@@ -391,7 +391,7 @@ class Canvas(Widget):
 
 
 class Label(Widget):
-    def __init__(self, master=None, text='label', bold=False, underline=False, **kwargs) -> None:
+    def __init__(self, master=None, text='label', bold=False, underline=False, copyable=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
         self.strvar = tk.StringVar()
@@ -405,7 +405,15 @@ class Label(Widget):
             font = self.style.font_underline
         if bold and underline:
             font = self.style.font_bold_underline
-        self._widget = tk.Label(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
+
+        if copyable: # hack using a tk.Entry but making it look like a Label
+            border_width = kwargs.pop('borderwidth', 0)
+            relief = kwargs.pop('relief', tk.FLAT)
+            self._widget = tk.Entry(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
+                                font=font, borderwidth=border_width, state='readonly', readonlybackground=self.style.widget_bg_color, relief=relief,
+                                justify=tk.CENTER, width=0, **kwargs) #self.width, **kwargs)
+        else:
+            self._widget = tk.Label(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
                                 padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
 
     def get(self):
@@ -420,7 +428,7 @@ class Label(Widget):
         Return width used by this Label.
         Overwrites Widget method.
         '''
-        return 6.6 * len(self.text)
+        return int(6.6 * len(self.text))
 
     @property
     def height(self) -> float:
@@ -552,7 +560,8 @@ class Table(Widget):
     # TODO:
     # Need copy/paste ability if enabled
     # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
-    def __init__(self, master=None, widget_name=None, type:str='label', rows:int=4, columns:int=3, border: bool=False, **kwargs) -> None:
+    def __init__(self, master=None, widget_name=None, type: str='label', rows: int=4, columns: int=3,
+                       border: bool=False, copyable: bool=True, **kwargs) -> None:
         '''
         type can be 'label' or 'entry'
         '''
@@ -571,7 +580,7 @@ class Table(Widget):
         for row in range(1, rows+1):
             for col in range(1, columns+1):
                 if self.type == 'label':
-                    new_cell = Label(master=self, borderwidth=(1 if border else 0), relief='solid')  # self is a tk.Frame
+                    new_cell = Label(master=self, borderwidth=(1 if border else 0), relief='solid', copyable=copyable)  # self is a tk.Frame
                     new_cell.set(f'Cell [{row}, {col}]')
                 elif self.type == 'entry':
                     new_cell = Entry(master=self)  # self is a tk.Frame

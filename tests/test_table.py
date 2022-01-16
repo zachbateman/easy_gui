@@ -14,12 +14,16 @@ class TestGUI(easy_gui.EasyGUI):
 
         self.table = sec.add_widget('table')
         self.table[2, 3] = '-TEST-'
-        
+
         sec.add_widget('btn', text='Print cell row=2, column=3', command_func=self.print_cell)
-        
+        sec.add_widget('canvasbutton', text='Change table[1, 1]', command_func=self.change_cell)
+
     def print_cell(self, *args):
         print(self.table[2, 3])
         self.table[3, 3] = self.table[2, 3] + '2'
+
+    def change_cell(self, *args):
+        self.table[1, 1] = '/' + self.table[1, 1] + '/'
 
 
 
