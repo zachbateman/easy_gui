@@ -288,15 +288,15 @@ class CanvasButton(Widget):
 
         if form == 'rounded':
             self._widget.create_polygon(self.polygon(10, width=width, height=height, border=True), fill=self.style.button_border_color, outline='', tags='button_border')
-            self._widget.create_arc(0, 0, 20, 20, start=90, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
-            self._widget.create_arc(width-20, 0, width, 20, start=0, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
-            self._widget.create_arc(width-20, height-20, width, height, start=270, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
-            self._widget.create_arc(0, height-20, 20, height, start=180, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
+            self._widget.create_arc(0, 0, 20, 20, style='pie', start=90, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
+            self._widget.create_arc(width-20, 0, width, 20, style='pie', start=0, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
+            self._widget.create_arc(width-20, height-20, width, height, style='pie', start=270, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
+            self._widget.create_arc(0, height-20, 20, height, style='pie', start=180, extent=90, fill=self.style.button_border_color, outline='', tags='button_border')
 
-            self._widget.create_arc(3, 3, 24, 24, start=90, extent=90, fill=self.style.button_color, outline='', tags='button')
-            self._widget.create_arc(width-18, 3, width-4, 18, start=0, extent=90, fill=self.style.button_color, outline='', tags='button')
-            self._widget.create_arc(width-18, height-18, width-4, height-4, start=270, extent=90, fill=self.style.button_color, outline='', tags='button')
-            self._widget.create_arc(3, height-18, 18, height-4, start=180, extent=90, fill=self.style.button_color, outline='', tags='button')
+            self._widget.create_arc(3, 3, 24, 24, style='pie', start=90, extent=90, fill=self.style.button_color, outline='', tags='button')
+            self._widget.create_arc(width-18, 3, width-4, 18, style='pie', start=0, extent=90, fill=self.style.button_color, outline='', tags='button')
+            self._widget.create_arc(width-18, height-18, width-4, height-4, style='pie', start=270, extent=90, fill=self.style.button_color, outline='', tags='button')
+            self._widget.create_arc(3, height-18, 18, height-4, style='pie', start=180, extent=90, fill=self.style.button_color, outline='', tags='button')
             self._widget.create_polygon(self.polygon(10, width=width, height=height, border=False), fill=self.style.button_color, outline='', tags='button')
             print('rounded CanvasButton generated')
         elif form == 'angular':

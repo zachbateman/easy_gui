@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='easy_gui',
-    version='0.4.6',
+    version='0.4.7',
     packages=['easy_gui'],
     license='MIT',
     author='Zach Bateman',
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/zachbateman/easy_gui.git',
-    download_url='https://github.com/zachbateman/easy_gui/archive/v_0.4.6.tar.gz',
+    download_url='https://github.com/zachbateman/easy_gui/archive/v_0.4.7.tar.gz',
     keywords=['GUI', 'TKINTER', 'APPLICATION', 'SIMPLE', 'EASY'],
     package_data={'': ['resources/transparent.ico']},
     include_package_data=True,
