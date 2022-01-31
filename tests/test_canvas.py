@@ -38,8 +38,10 @@ class GUI(easy_gui.EasyGUI):
         self.add_widget('btn', 'Change Line Color', command_func=self.change_line_color)
 
         self.add_widget('canvasbutton', text='Canvas Button', form='rounded', command_func=lambda _: print(' - CanvasButton Clicked -'))
-        self.add_widget('canvasbutton', text='Canvas Button', form='angular', fontsize=8, command_func=lambda _: print(' - CanvasButton Clicked -'))
+        self.add_widget('canvasbutton', text='Delete Arc2', form='angular', fontsize=8, command_func=self.delete_arc2)
 
+    def delete_arc2(self, *args):
+        self.canvas.delete('arc2')
 
     def change_line_color(self, *args):
         self.canvas.itemconfigure('1234', fill=colors.pop())

@@ -356,6 +356,13 @@ class Canvas(Widget):
             tag = '_' + tag
         return tag
 
+    def delete(self, tag, *args, **kwargs) -> None:
+        '''
+        Delete items from canvas if need to clear them.  Using this
+        avoids memory leak that would happen if just drew over existing objects.
+        '''
+        self._widget.delete(tag, *args, **kwargs)
+
     def itemconfigure(self, tag, *args, **kwargs) -> None:
         '''See tkinter.Canvas.itemconfigure... Used to change tagged items.'''
         self._widget.itemconfigure(self._clean_tag(tag), *args, **kwargs)
