@@ -10,9 +10,12 @@ from tkinter import _tkinter
 import sys
 import threading
 from typing import List
-import matplotlib
-matplotlib.use('TkAgg')
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+try:
+    import matplotlib
+    matplotlib.use('TkAgg')
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+except ImportError:  # don't force user to have matplotlib installed to use most (non-matplotlib) functionality
+    pass
 from contextlib import nullcontext
 import datetime
 import calendar
@@ -275,7 +278,8 @@ class Button(Widget):
 
 
 class CanvasButton(Widget):
-    def __init__(self, master=None, text: str='button', width: int=120, height: int=35, form: str='rounded', command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
+    def __init__(self, master=None, text: str='button', width: int=120, height: int=35, form: str='rounded', fontsize: int=12,
+                         command_func=lambda x: None, separate_thread=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
         self._widget = Canvas(master=master, width=width, height=height, background=self.style.section_color, highlightthickness=0)
@@ -299,7 +303,7 @@ class CanvasButton(Widget):
             self._widget.create_polygon(self.polygon(8, width=width, height=height, border=True), fill=self.style.button_border_color, outline='', tags='button_border')
             self._widget.create_polygon(self.polygon(8, width=width, height=height, border=False), fill=self.style.button_color, outline='', tags='button')
 
-        self._widget.create_text(width/2, height/2, text=text, anchor='center', fill='black', tags='button_text')
+        self._widget.create_text(width/2, height/2, text=text, fontsize=fontsize, anchor='center', fill='black', tags='button_text')
 
         self._widget.bind_click('button', command_func, separate_thread)
         self._widget.bind_click('button_text', command_func, separate_thread)
@@ -364,26 +368,43 @@ class Canvas(Widget):
         else:
             self._widget.tag_bind(self._clean_tag(tag), '<Button-1>', command_func, add='+')
 
-    def create_text(self, x, y, text='Text', anchor='nw', fill='black', tags=None):
-        self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=self._clean_tag(tags))
+    def create_text(self, x, y, text='Text', anchor='nw', fill='black', tags=None,
+                               fontsize: int=12, bold: bool=False, **kwargs):
+        if 'font' not in kwargs:
+            font = ('Arial', fontsize, 'bold') if bold else ('Arial', fontsize)
+            self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=self._clean_tag(tags), font=font, **kwargs)
+        else:
+            self._widget.create_text(x, y, text=text, anchor=anchor, fill=fill, tags=self._clean_tag(tags), **kwargs)
 
-    def create_line(self, x1, y1, x2, y2, fill='blue', width=3, tags=None):
-        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=self._clean_tag(tags))
+    def create_line(self, x1, y1, x2, y2, fill='blue', width=3, tags=None, **kwargs):
+        self._widget.create_line(x1, y1, x2, y2, fill=fill, width=width, tags=self._clean_tag(tags), **kwargs)
 
-    def create_rectangle(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None):
-        self._widget.create_rectangle(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+    def create_rectangle(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None, **kwargs):
+        self._widget.create_rectangle(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags), **kwargs)
 
-    def create_polygon(self, *args, fill='green', outline='blue', width=3, tags=None):
-        self._widget.create_polygon(*args, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+    def create_polygon(self, *args, fill='green', outline='blue', width=3, tags=None, **kwargs):
+        self._widget.create_polygon(*args, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags), **kwargs)
 
-    def create_oval(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None):
-        self._widget.create_oval(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags))
+    def create_oval(self, x1, y1, x2, y2, fill='green', outline='blue', width=3, tags=None, **kwargs):
+        self._widget.create_oval(x1, y1, x2, y2, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags), **kwargs)
 
-    def create_circle(self, x, y, radius=5, fill='green', outline='blue', width=3, tags=None):
-        self.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill, outline=outline, width=width, tags=tags)
+    def create_circle(self, x, y, radius=5, fill='green', outline='blue', width=3, tags=None, **kwargs):
+        self.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill, outline=outline, width=width, tags=self._clean_tag(tags), **kwargs)
 
-    def create_arc(self, x0, y0, x1, y1, start=0, extent=100, fill='green', outline='blue', tags=None):
-        self._widget.create_arc(x0, y0, x1, y1, start=start, extent=extent, fill=fill, outline=outline, tags=tags)
+    def create_arc(self, x0, y0, x1, y1, start=0, extent=100, fill='green', outline='blue', tags=None,
+                             style='arc', **kwargs):
+        '''
+        "start" is starting degrees measured from +x direction.
+        "extent" is the width of the slice in degrees counterclockwise from the "start" angle.
+        "style" kwarg can be one of 'pie', 'chord', or 'arc'
+        '''
+        if style.lower() == 'pie':
+            style = tk.PIESLICE
+        elif style.lower() == 'chord':
+            style = tk.CHORD
+        else:
+            style = tk.ARC
+        self._widget.create_arc(x0, y0, x1, y1, start=start, extent=extent, fill=fill, outline=outline, tags=self._clean_tag(tags), style=style, **kwargs)
 
     def move(self, *args, **kwargs):
         self._widget.move(*args, **kwargs)
