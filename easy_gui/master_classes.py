@@ -471,6 +471,21 @@ class Section(tk.Frame, GridMaster, SectionMaster):
             elif title == True:  # if True, use the name as the label text
                 self.add_widget(type='label', text=name)
 
+    def __init_subclass__(cls, **kwargs):
+        '''
+        Wraps user subclass __init__ to implicitly handle the Section.__init__ call.
+        This avoids the need for subclass to use "super().__init__(*args, **kwargs)"
+        '''
+        old_init = cls.__init__  # reference to original subclass method so new_init isn't recursive
+        def new_init(self, *args, **kwargs):
+            Section.__init__(self, **kwargs)  # in place of super().__init__() in subclass __init__
+            try:
+                old_init(self, *args, **kwargs)
+            except TypeError:
+                print('\n* Are you passing in kwargs to Section creation?\n* If so, remember to put a "**kwargs" in the __init__ function!\n')
+                traceback.print_exc()
+        cls.__init__ = new_init  # overwrite subclass __init__ method
+
     @property
     def style(self):
         '''Goes upsteam to evenually reference EasyGUI.style'''

@@ -9,7 +9,6 @@ data = [(1, 1), (2, 3), (3, 5), (4, 4), (5, 7), (6, 7)]
 
 class RightSide(Section):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.add_widget('lbl', 'Right Side')
         self.add_widget('lbl', 'Right Label 2')
 
