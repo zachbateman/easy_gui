@@ -228,10 +228,13 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
         # See documention of below WINDOWS options here: https://wiki.tcl-lang.org/page/wm+attributes
         self.wm_attributes('-alpha', alpha)
         self.wm_attributes('-fullscreen', fullscreen)
-        self.wm_attributes('-disabled', disable_interaction)  # disables window interaction for click pass through
-        self.wm_attributes('-toolwindow', toolwindow)  # makes a window with a single close-button (which is smaller than usual) on the right of the title bar
         self.wm_attributes('-topmost', topmost)  # make root window always on top
         self.overrideredirect(overrideredirect)  # hide root window drag bar and close button
+        try:
+            self.wm_attributes('-disabled', disable_interaction)  # disables window interaction for click pass through
+            self.wm_attributes('-toolwindow', toolwindow)  # makes a window with a single close-button (which is smaller than usual) on the right of the title bar
+        except Exception:  # above options only for Windows system
+            pass
 
         s = ttk.Style()
         s.configure('.', background=self.style.widget_bg_color)

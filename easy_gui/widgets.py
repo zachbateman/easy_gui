@@ -298,7 +298,6 @@ class CanvasButton(Widget):
             self._widget.create_arc(width-18, height-18, width-4, height-4, style='pie', start=270, extent=90, fill=self.style.button_color, outline='', tags='button')
             self._widget.create_arc(3, height-18, 18, height-4, style='pie', start=180, extent=90, fill=self.style.button_color, outline='', tags='button')
             self._widget.create_polygon(self.polygon(10, width=width, height=height, border=False), fill=self.style.button_color, outline='', tags='button')
-            print('rounded CanvasButton generated')
         elif form == 'angular':
             self._widget.create_polygon(self.polygon(8, width=width, height=height, border=True), fill=self.style.button_border_color, outline='', tags='button_border')
             self._widget.create_polygon(self.polygon(8, width=width, height=height, border=False), fill=self.style.button_color, outline='', tags='button')
@@ -586,10 +585,9 @@ class ListBox(Widget):
 
 class Table(Widget):
     # TODO:
-    # Need copy/paste ability if enabled
     # Want to be able to double-click on a cell and trigger event (like drill down into more data with a popup window?)
     def __init__(self, master=None, widget_name=None, type: str='label', rows: int=4, columns: int=3,
-                       border: bool=False, copyable: bool=True, **kwargs) -> None:
+                       border: bool=False, copyable: bool=False, **kwargs) -> None:
         '''
         type can be 'label' or 'entry'
         '''
