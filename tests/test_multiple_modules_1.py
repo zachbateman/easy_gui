@@ -3,14 +3,15 @@ import sys
 sys.path.insert(1, '..')
 import easy_gui
 from easy_gui import Section
-from test_multiple_modules_2 import RightSide
+from test_multiple_modules_2 import RightSide1, RightSide2
 
 
 class MultipleModuleGUI(easy_gui.EasyGUI):
     def __init__(self):
         self.geometry('900x700')
 
-        self.configure_grid(['left_side   right_side'])
+        self.configure_grid(['left_side   right_side1',
+                                     'left_side   right_side2'])
 
         left_side = self.add_section('left_side', grid_area='left_side')
         left_side.add_widget('lbl', 'Left Side')
@@ -19,8 +20,9 @@ class MultipleModuleGUI(easy_gui.EasyGUI):
         self.count = 0
         self.update_label = left_side.add_widget('lbl', 'Update Label: ' + str(self.count))
         self.update = left_side.add_widget('btn', 'Update Label', command_func=self.update)
-       
-        right_side = self.add_section(external_section=RightSide, grid_area='right_side', relief='sunken')
+
+        right_side = self.add_section(external_section=RightSide1, grid_area='right_side1', relief='sunken')
+        right_side = self.add_section(external_section=RightSide2, grid_area='right_side2', relief='sunken')
 
 
     def update(self, *args):

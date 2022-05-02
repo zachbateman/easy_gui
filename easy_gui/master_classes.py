@@ -482,8 +482,9 @@ class Section(tk.Frame, GridMaster, SectionMaster):
             try:
                 old_init(self, *args, **kwargs)
             except TypeError:
-                print('\n* Are you passing in kwargs to Section creation?\n* If so, remember to put a "**kwargs" in the __init__ function!\n')
-                traceback.print_exc()
+                # traceback.print_exc()
+                # print('\n\n* Are you subclassing Section or passing in kwargs to Section creation?\n* If so, remember to put a "**kwargs" in the __init__ function!\n')
+                old_init(self)
         cls.__init__ = new_init  # overwrite subclass __init__ method
 
     @property
