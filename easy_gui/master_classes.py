@@ -218,7 +218,11 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
 
         self.icon(bitmap=os.path.join(os.path.dirname(__file__), 'resources', 'transparent.ico'), default=True)
         self.title('EasyGUI')
+
         self.geometry("300x180+100+60")  # format of "WIDTHxHEIGHT+(-)XPOSITION+(-)YPOSITION"
+        # Instead of setting .geometry, can also set "width", "height" to integer values
+        # and "center" to True in application subclass to size and center window
+
         self.transparent = False
         self.configure(background=self.style.window_color)
 
@@ -257,6 +261,32 @@ class EasyGUI(tk.Tk, GridMaster, SectionMaster):
                 print('\n* Are you passing in kwargs to GUI creation?\n* If so, remember to put a "**kwargs" in the __init__ function!\n')
                 traceback.print_exc()
             self.create()  # populates GUI elements
+
+            # now change window geometry if "width", "height" and/or "center" attributes are set in subclass' __init__ method
+            # seems easier to allow this than forcing self.geometry() usage as that is a bit cryptic and hard to remember
+            # auto-centering by setting self.center = True is also convenient as usually that behavior is desired
+            self.update_idletasks()  # need to run here so any geometry changes from subclass __init__ run before checking sizes
+            current_width, current_height = self.winfo_width(), self.winfo_height()
+            frame_width = self.winfo_rootx() - self.winfo_x()
+            window_width = current_width + 2 * frame_width
+            titlebar_height = self.winfo_rooty() - self.winfo_y()
+            window_height = current_height + titlebar_height + frame_width
+            if hasattr(self, 'width'):
+                window_width = self.width
+            if hasattr(self, 'height'):
+                window_height = self.height
+            if hasattr(self, 'center') and self.center == True:
+                center_x_val = int(self.winfo_screenwidth() / 2 - window_width / 2)
+                center_y_val = int((self.winfo_screenheight() / 2 - window_height / 2))
+                center_y_val -= 30  # offset a little higher than middle since many people have toolbar on bottom of screen
+                if center_x_val < 0: # don't let left side of window go beyond screen if too wide
+                    center_x_val = 0
+                if center_y_val < 0:  # don't let top of window go above screen if too tall
+                    center_y_val = 0
+                self.geometry(f'{window_width}x{window_height}+{center_x_val}+{center_y_val}')
+            elif hasattr(self, 'width') or hasattr(self, 'height'):
+                self.geometry(f'{window_width}x{window_height}')
+
             self.bind_all('<Key>', self.log_keys)
             self.mainloop()  # runs tkinter mainloop
         cls.__init__ = new_init  # overwrite subclass __init__ method

@@ -8,7 +8,10 @@ colors = [color for _ in range(100) for color in ['red', 'green', 'purple']]
 
 class GUI(easy_gui.EasyGUI):
     def __init__(self):
-        self.geometry('500x550')
+        # self.geometry('500x550')
+        self.width = 500
+        self.height = 550
+        self.center = True
 
         canvas = self.add_widget('canvas')
         self.canvas = canvas

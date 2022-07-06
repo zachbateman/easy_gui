@@ -7,7 +7,10 @@ import easy_gui
 
 class TestGUI(easy_gui.EasyGUI):
     def __init__(self):
-        self.geometry('550x500')
+        # self.geometry('550x500')
+        self.width = 550
+        self.height = 500
+        self.center = True
 
         sec = self.add_section('test_section')
         sec.add_widget(type='label', text='Testing a Table Widget!')
@@ -16,7 +19,7 @@ class TestGUI(easy_gui.EasyGUI):
         self.table[2, 3] = '-TEST-'
 
         sec.add_widget('btn', text='Print cell row=2, column=3', command_func=self.print_cell)
-        sec.add_widget('canvasbutton', text='Change table[1, 1]', command_func=self.change_cell)
+        sec.add_widget('canvasbutton', text='Change table[1, 1]', command_func=self.change_cell, width=150)
 
     def print_cell(self, *args):
         print(self.table[2, 3])
