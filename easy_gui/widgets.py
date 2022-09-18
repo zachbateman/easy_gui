@@ -67,8 +67,10 @@ class Widget(tk.Frame):
                     elif isinstance(self, DatePicker):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
                         self.grid_interior()
+                    elif isinstance(self, Label):
+                        self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1, sticky='NSEW')
                     else:
-                        self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
+                        self._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
                     return  # early return if everything works fine with initial attempt (no other actions needed)
                 except KeyError:
                     print(f'"{self.grid_area}" not found in parent\'s grid areas.\nResorting to a new row.')
@@ -418,7 +420,7 @@ class Canvas(Widget):
 
 
 class Label(Widget):
-    def __init__(self, master=None, text='label', bold=False, underline=False, copyable=False, **kwargs) -> None:
+    def __init__(self, master=None, text='label', bold=False, underline=False, copyable=False, align='center', **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
         self.strvar = tk.StringVar()
@@ -433,15 +435,29 @@ class Label(Widget):
         if bold and underline:
             font = self.style.font_bold_underline
 
+
+
         if copyable: # hack using a tk.Entry but making it look like a Label
+            if align.lower() == 'center':
+                justify = tk.CENTER
+            elif align.lower() == 'left':
+                justify = tk.LEFT
+            elif align.lower() == 'right':
+                justify = tk.RIGHT
             border_width = kwargs.pop('borderwidth', 0)
             relief = kwargs.pop('relief', tk.FLAT)
             self._widget = tk.Entry(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
                                 font=font, borderwidth=border_width, state='readonly', readonlybackground=self.style.widget_bg_color, relief=relief,
-                                justify=tk.CENTER, width=0, **kwargs) #self.width, **kwargs)
+                                justify=justify, width=0, **kwargs) #self.width, **kwargs)
         else:
+            if align.lower() == 'center':
+                anchor = None
+            elif align.lower() == 'left':
+                anchor = 'w'
+            elif align.lower() == 'right':
+                anchor = 'e'
             self._widget = tk.Label(master=master, textvariable=self.strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
-                                padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
+                                padx=self.style.label_padx, pady=self.style.label_pady, font=font, anchor=anchor, **kwargs)
 
     def get(self):
         return self.strvar.get()
