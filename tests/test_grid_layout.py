@@ -8,6 +8,7 @@ class GridNoErrors(easy_gui.EasyGUI):
     def __init__(self):
         self.geometry('300x300')
         self.configure_grid(['.  section1', 'section2   .'])
+        self.grid_rowconfigure(0, weight=0, minsize=100)
 
         self.add_section('controls', grid_area='section1')
         self.sections['controls'].configure_grid(['b1', '.', 'b2'])

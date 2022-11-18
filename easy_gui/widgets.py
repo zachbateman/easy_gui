@@ -21,6 +21,9 @@ import datetime
 import calendar
 
 
+def clean_kwargs(kwargs: dict, keys_to_remove: list) -> dict:
+    return {key: value for key, value in kwargs.items() if key not in keys_to_remove}
+
 
 class Widget(tk.Frame):
     '''
@@ -28,6 +31,7 @@ class Widget(tk.Frame):
     Class assumes the "_widget" attribute is the actual tkinter widget (if used)
     '''
     def __init__(self, master=None, bg=None, grid_area=None, **kwargs) -> None:
+        kwargs = clean_kwargs(kwargs, ['justify', 'align'])
         super().__init__(master=master, **kwargs)
         self.parent = master  # master attr used in tkinter; parent attr used in this code
         self.grid_area = grid_area
@@ -59,8 +63,9 @@ class Widget(tk.Frame):
                         self._widget._widget.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
                     elif isinstance(self, LabelEntry):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1)
-                        self._lbl_widget.pack(side='left', expand=True)
+                        self._lbl_widget._widget.pack(side='left', expand=True)
                         self._widget.pack(side='left')
+                        self._widget._widget.pack(side='left')
                     elif isinstance(self, Table):
                         self.grid(row=bounds['first_row'], column=bounds['first_column'], rowspan=bounds['last_row']-bounds['first_row']+1, columnspan=bounds['last_column']-bounds['first_column']+1) #, sticky='NSEW')
                         self.grid_cells()
@@ -231,7 +236,10 @@ def add_widget(self, type='label', text='', widget_name=None, grid_area=None, **
             new_widget = DatePicker(master=self, grid_area=grid_area, **kwargs)
             self.widgets[new_widget_name('datepicker')] = new_widget
         else:
-            raise Exception(f'Error!  Widget type "{type}" not supported. (check spelling?)\n')
+            exception_text = f'Error!  Widget type "{type}" not supported. (check spelling?)\n'
+            exception_text += 'Try one of:\n    ' + '    \n'.join(['label', 'button', 'canvas', 'canvasbutton', 'entry', 'labelentry', 'checkbox']) + '\n    '
+            exception_text += '    \n'.join(['dropdown', 'listbox', 'table', 'tree', 'matplotlib', 'stdout', 'scrolledtext', 'slider', 'progressbar', 'datepicker'])
+            raise Exception(exception_text)
 
         return new_widget
 
@@ -247,8 +255,7 @@ class Button(Widget):
                 print('Error!  Can only use a ".png" file as a button image.')
             else:
                 self.image = tk.PhotoImage(file=image)
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         if not use_ttk:
             self._widget = tk.Button(master=master, text=text, image=self.image, highlightbackground=self.style.button_color, font=self.style.font, **kwargs)
         else:
@@ -344,8 +351,7 @@ class CanvasButton(Widget):
 class Canvas(Widget):
     def __init__(self, master=None, width=300, height=250, background='gray90', **kwargs) -> None:
         super().__init__(master=master, **kwargs)
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = tk.Canvas(master=master, width=width, height=height, background=background, **kwargs)
 
     def _clean_tag(self, tag):
@@ -425,8 +431,7 @@ class Label(Widget):
         self.text = text
         self.strvar = tk.StringVar()
         self.set(text)
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         font = self.style.font
         if bold:
             font = self.style.font_bold
@@ -486,8 +491,7 @@ class Entry(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.strvar = tk.StringVar()
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area', 'align'])
         self._widget = tk.Entry(master=master, textvariable=self.strvar, **kwargs)
 
     def get(self):
@@ -504,9 +508,9 @@ class LabelEntry(Widget):
     def __init__(self, master=None, text='label', bold=False, underline=False, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.text = text
-        self.lbl_strvar = tk.StringVar()
-        self.set(text)
-        del kwargs['grid_area']
+        # self.lbl_strvar = tk.StringVar()
+        # self.set_label(text)
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         font = self.style.font
         if bold:
             font = self.style.font_bold
@@ -514,11 +518,13 @@ class LabelEntry(Widget):
             font = self.style.font_underline
         if bold and underline:
             font = self.style.font_bold_underline
-        self._lbl_widget = tk.Label(master=self, textvariable=self.lbl_strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
-                                padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
 
-        self.strvar = tk.StringVar()
-        self._widget = tk.Entry(master=self, textvariable=self.strvar, **kwargs)
+        # self._lbl_widget = tk.Label(master=self, textvariable=self.lbl_strvar, bg=self.style.widget_bg_color, fg=self.style.text_color,
+                                # padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
+        self._lbl_widget = Label(master=self, text=text, **kwargs)
+        self._widget = Entry(master=self, **kwargs)
+        
+        self.set_label(text)
 
     def destroy(self):
         '''Need custom destroy method as also have a _lbl_widget.'''
@@ -530,14 +536,19 @@ class LabelEntry(Widget):
         return self._widget.get()
 
     def set(self, value):
+        '''Set the value in the Entry.'''
+        self._widget.set(value)
+
+    def set_label(self, value):
         '''Set the value in the Label.'''
-        self.lbl_strvar.set(value)
+        # self.lbl_strvar.set(value)
+        self._lbl_widget.set(value)
 
 
 class CheckBox(Widget):
     def __init__(self, master=None, text='checkbox', **kwargs) -> None:
         super().__init__(master=master, **kwargs)
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = ttk.Checkbutton(master=master, text=text, offvalue=False, onvalue=True, **kwargs)
         self._widget.invoke()  # switch from whatever starting state to checked
         self._widget.invoke()  # switch from checked to unchecked
@@ -562,7 +573,7 @@ class DropDown(Widget):
         super().__init__(master=master, **kwargs)
         self.strvar = tk.StringVar()
         self.dropdown_options = dropdown_options
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = ttk.Combobox(master, textvariable=self.strvar, values=dropdown_options, **kwargs)
 
     def get(self):
@@ -590,7 +601,7 @@ class ListBox(Widget):
     def __init__(self, master=None, options=[], **kwargs) -> None:
         super().__init__(master=master, **kwargs)
         self.options = options
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = tk.Listbox(master, selectmode=tk.MULTIPLE, **kwargs)
         for option in options:
             self._widget.insert(tk.END, option)
@@ -613,9 +624,8 @@ class Table(Widget):
         self.rows = rows
         self.column = columns
         self.grid_area = kwargs.get('grid_area')
-        self.kwargs = kwargs
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        # self.kwargs = kwargs
+        # kwargs = clean_kwargs(kwargs, ['grid_area'])
 
         self.cells = {row: {col: None for col in range(1, columns+1)} for row in range(1, rows+1)}
         self.cell_list = []  # another reference to the same cell objects in list form for easier access in some cases
@@ -653,7 +663,7 @@ class Tree(Widget):
     def __init__(self, master=None, tree_col_header: str='Name', height: int=30, tree_col_width: int=120, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
 
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = ttk.Treeview(self, columns=(), style='Treeview', show='tree headings', height=height, **kwargs)
         self.tree_col_header = tree_col_header
         self.column_definitions = [{'column_name': '#0', 'width': tree_col_width, 'minwidth': 20, 'stretch': tk.NO}]
@@ -731,7 +741,7 @@ class Slider(Widget):
     def __init__(self, master=None, min=0, max=100, start=None, resolution=5, tickinterval=25, length=10, hz_or_vt='vt',
                       command_func=None, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         orient = 'horizontal' if hz_or_vt.lower() == 'hz' else 'vertical'
         self._widget = tk.Scale(master, from_=min, to=max, resolution=resolution, tickinterval=tickinterval, orient=orient,
                                         length=length, command=command_func, **kwargs)
@@ -753,8 +763,7 @@ class MatplotlibPlot(Widget):
         self.toolbar = toolbar
         self.grid_area = kwargs.get('grid_area')
         self.kwargs = kwargs
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = tk.Canvas(master=master, **kwargs)
         self.plot_drawn = False
         self.bindings = []
@@ -813,7 +822,7 @@ class ProgressBar(Widget):
         '''mode arg can be "determinate" or "indeterminate" '''
         super().__init__(master=master, **kwargs)
         self.length = length
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = ttk.Progressbar(master, orient=orient, mode=mode, length=length, **kwargs)
         self._widget['value'] = 0
 
@@ -832,7 +841,7 @@ class ProgressBar(Widget):
 class ScrolledText(Widget):
     def __init__(self, master=None, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = tk.scrolledtext.ScrolledText(master, wrap=tk.WORD, **kwargs)
 
     def get(self) -> List[str]:
@@ -843,7 +852,7 @@ class ScrolledText(Widget):
 class StdOutBox(Widget):
     def __init__(self, master=None, height: int=10, width: int=30, **kwargs) -> None:
         super().__init__(master=master, **kwargs)
-        del kwargs['grid_area']
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
         self._widget = tk.Text(master, wrap='word', height=height, width=width, **kwargs)
         sys.stdout = self
 
@@ -868,9 +877,8 @@ class DatePicker(Widget):
         super().__init__(master=master, **kwargs)
         self._widget = self
         self.grid_area = kwargs.get('grid_area')
-        self.kwargs = kwargs
-        if 'grid_area' in kwargs:
-            del kwargs['grid_area']
+        # self.kwargs = kwargs
+        kwargs = clean_kwargs(kwargs, ['grid_area'])
 
         self.selected_day = None
         self.selected_month = 9
