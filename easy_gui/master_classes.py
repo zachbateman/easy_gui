@@ -3,7 +3,6 @@ Python module containing "Master" classes of easy_gui project.
 The classes in here are designed to be subclassed in user applications.
 '''
 import tkinter as tk
-import tkinter.scrolledtext
 from tkinter import ttk
 from tkinter import _tkinter
 from .styles import BaseStyle

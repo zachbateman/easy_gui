@@ -2,9 +2,7 @@
 Python module containing Widget classes (Widget subclasses) of easy_gui project.
 The classes in here are the individual GUI elements.
 '''
-# from .master_classes import Widget
 import tkinter as tk
-import tkinter.scrolledtext
 from tkinter import ttk
 from tkinter import _tkinter
 import sys
@@ -523,7 +521,7 @@ class LabelEntry(Widget):
                                 # padx=self.style.label_padx, pady=self.style.label_pady, font=font, **kwargs)
         self._lbl_widget = Label(master=self, text=text, **kwargs)
         self._widget = Entry(master=self, **kwargs)
-        
+
         self.set_label(text)
 
     def destroy(self):
