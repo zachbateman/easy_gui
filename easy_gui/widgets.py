@@ -5,6 +5,7 @@ The classes in here are the individual GUI elements.
 import tkinter as tk
 from tkinter import ttk
 from tkinter import _tkinter
+from tkinter import scrolledtext
 import sys
 import threading
 from typing import List
